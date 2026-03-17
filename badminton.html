@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BADminton</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:           #07070D;
+      --surface:      #0D0D16;
+      --card:         #11111C;
+      --card-hi:      #161624;
+      --border:       rgba(255,255,255,0.07);
+      --border-hi:    rgba(255,255,255,0.13);
+      --text:         #EEEEF8;
+      --dim:          #8888AA;
+      --muted:        #44445A;
+
+      --lime:         #C9FF00;
+      --lime-dim:     rgba(201,255,0,0.09);
+      --lime-glow:    rgba(201,255,0,0.22);
+      --lime-border:  rgba(201,255,0,0.28);
+
+      --beg:          #4DA6FF;
+      --beg-bg:       rgba(77,166,255,0.12);
+      --beg-border:   rgba(77,166,255,0.28);
+      --int:          #FFB627;
+      --int-bg:       rgba(255,182,39,0.12);
+      --int-border:   rgba(255,182,39,0.28);
+      --adv:          #FF4C4C;
+      --adv-bg:       rgba(255,76,76,0.12);
+      --adv-border:   rgba(255,76,76,0.28);
+
+      --r:  10px;
+      --r-sm: 7px;
+    }
+
+    /* ─── Light mode ─────────────────────────────────────── */
+    .light {
+      --bg:           #F0F0F8;
+      --surface:      #FAFAFE;
+      --card:         #EFEFF7;
+      --card-hi:      #E6E6F2;
+      --border:       rgba(0,0,0,0.08);
+      --border-hi:    rgba(0,0,0,0.15);
+      --text:         #0E0E1C;
+      --dim:          #55556A;
+      --muted:        #AAAABE;
+
+      --lime:         #7AAA00;
+      --lime-dim:     rgba(122,170,0,0.10);
+      --lime-glow:    rgba(122,170,0,0.22);
+      --lime-border:  rgba(122,170,0,0.30);
+
+      --beg:          #1A7FE8;
+      --beg-bg:       rgba(26,127,232,0.10);
+      --beg-border:   rgba(26,127,232,0.25);
+      --int:          #C07A00;
+      --int-bg:       rgba(192,122,0,0.10);
+      --int-border:   rgba(192,122,0,0.25);
+      --adv:          #D92B2B;
+      --adv-bg:       rgba(217,43,43,0.10);
+      --adv-border:   rgba(217,43,43,0.25);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      background-image:
+        linear-gradient(var(--grid-line, rgba(201,255,0,0.022)) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line, rgba(201,255,0,0.022)) 1px, transparent 1px);
+      background-size: 52px 52px;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 5rem;
+      transition: background-color .2s, color .2s;
+    }
+    .light body, .light {
+      --grid-line: rgba(0,0,0,0.045);
+    }
+
+    /* ─── Header ─────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 60;
+      background: var(--header-bg, rgba(7,7,13,0.82));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: .85rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      transition: background-color .2s, border-color .2s;
+    }
+    .light header { --header-bg: rgba(240,240,248,0.88); }
+    .hd-icon { font-size: 1.5rem; line-height:1; }
+    .hd-wordmark {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.75rem;
+      letter-spacing: .06em;
+      line-height: 1;
+    }
+    .hd-wordmark em { color: var(--lime); font-style: normal; }
+    .hd-tag {
+      margin-left: auto;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    /* theme toggle */
+    #theme-btn {
+      background: var(--card);
+      border: 1px solid var(--border-hi);
+      color: var(--dim);
+      border-radius: 20px;
+      padding: .3rem .65rem;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: all .15s;
+      line-height: 1;
+      display: flex; align-items: center; gap: .3rem;
+    }
+    #theme-btn:hover { border-color: var(--lime); color: var(--lime); }
+
+    /* ─── Footer ─────────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem 1.5rem;
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    footer .heart { color: #FF4C4C; }
+    footer a { color: var(--dim); text-decoration: none; }
+    footer a:hover { color: var(--lime); }
+
+    /* ─── Layout ─────────────────────────────────────────── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    /* ─── Sections ───────────────────────────────────────── */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      animation: rise .22s ease both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .sec-head {
+      padding: .65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sec-title {
+      font-size: .62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      color: var(--muted);
+    }
+    .sec-title b { color: var(--dim); font-weight: 800; }
+    .sec-body { padding: 1rem; }
+
+    /* ─── Form controls ──────────────────────────────────── */
+    .add-form {
+      display: flex;
+      gap: .45rem;
+      flex-wrap: wrap;
+    }
+    input.f, select.f {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      padding: .58rem .85rem;
+      font-size: .875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s, background .15s;
+    }
+    input.f { flex: 1; min-width: 130px; }
+    input.f::placeholder { color: var(--muted); }
+    input.f:focus, select.f:focus { border-color: var(--lime); background: #14141F; }
+    select.f { cursor: pointer; }
+    select.f option { background: #1a1a28; }
+
+    /* ─── Buttons ────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: inherit;
+      font-size: .82rem;
+      font-weight: 700;
+      padding: .55rem 1.1rem;
+      border-radius: var(--r-sm);
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn-lime {
+      background: var(--lime);
+      color: #000;
+      letter-spacing: .02em;
+    }
+    .btn-lime:hover { filter: brightness(1.08); box-shadow: 0 0 22px var(--lime-glow); }
+    .btn-lime:disabled { opacity: .3; cursor: not-allowed; filter: none; box-shadow: none; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border-hi);
+      color: var(--dim);
+    }
+    .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
+    .btn-red {
+      background: transparent;
+      border: 1px solid rgba(255,76,76,.3);
+      color: var(--adv);
+    }
+    .btn-red:hover { border-color: var(--adv); background: rgba(255,76,76,.08); }
+    .btn-sm { padding: .28rem .65rem; font-size: .7rem; }
+
+    /* ─── Skill pills ────────────────────────────────────── */
+    .sp {
+      display: inline-block;
+      font-size: .6rem;
+      font-weight: 800;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: .17rem .48rem;
+      border-radius: 20px;
+      vertical-align: middle;
+    }
+    .sp-1 { background: var(--beg-bg);  color: var(--beg); border: 1px solid var(--beg-border); }
+    .sp-2 { background: var(--int-bg);  color: var(--int); border: 1px solid var(--int-border); }
+    .sp-3 { background: var(--adv-bg);  color: var(--adv); border: 1px solid var(--adv-border); }
+
+    /* ─── Player list ────────────────────────────────────── */
+    .player-list { display: flex; flex-direction: column; gap: .38rem; margin-top: .75rem; }
+    .player-row {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .55rem .85rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--lc, var(--border));
+      border-radius: var(--r-sm);
+      transition: background .14s;
+    }
+    .player-row:hover { background: var(--card-hi); }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pname { flex: 1; font-size: .875rem; font-weight: 600; }
+    .pgames { font-size: .72rem; color: var(--muted); font-weight: 500; min-width: 40px; text-align: right; }
+    .rm-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .8rem;
+      padding: .15rem .3rem; border-radius: 4px;
+      line-height: 1; transition: color .13s, background .13s;
+    }
+    .rm-btn:hover { color: var(--adv); background: rgba(255,76,76,.1); }
+
+    /* ─── Match settings ─────────────────────────────────── */
+    .settings-row {
+      display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+    }
+    .toggle-group {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 3px; gap: 3px;
+    }
+    .tb {
+      padding: .38rem .9rem;
+      border: none; background: transparent;
+      color: var(--dim);
+      font-family: inherit; font-size: .8rem; font-weight: 700;
+      cursor: pointer; border-radius: 5px;
+      transition: all .14s;
+    }
+    .tb.on { background: var(--lime); color: #000; }
+    .courts-wrap {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .78rem; color: var(--dim); font-weight: 600;
+    }
+    .courts-num {
+      width: 44px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text);
+      padding: .36rem .4rem; text-align: center;
+      font-size: .875rem; font-family: inherit; outline: none;
+    }
+    .courts-num:focus { border-color: var(--lime); }
+    .gen-row {
+      margin-top: .85rem;
+      display: flex; gap: .45rem;
+    }
+    .btn-gen {
+      flex: 1;
+      background: var(--lime); color: #000;
+      border: none; border-radius: var(--r-sm);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem; letter-spacing: .12em;
+      padding: .72rem 1rem;
+      cursor: pointer; transition: all .15s;
+    }
+    .btn-gen:hover { filter: brightness(1.09); box-shadow: 0 4px 28px var(--lime-glow); }
+    .btn-gen:active { transform: scale(.98); }
+    .btn-gen:disabled { opacity: .3; cursor: not-allowed; filter: none; box-shadow: none; }
+
+    /* ─── Match cards ────────────────────────────────────── */
+    .matches-list { display: flex; flex-direction: column; gap: .75rem; }
+    .match-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      transition: border-color .18s;
+    }
+    .match-card:hover { border-color: var(--border-hi); }
+    .mc-head {
+      padding: .42rem .9rem;
+      background: linear-gradient(120deg, rgba(201,255,0,0.055) 0%, transparent 60%);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .court-tag {
+      font-size: .62rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--lime);
+      background: var(--lime-dim);
+      border: 1px solid var(--lime-border);
+      padding: .14rem .48rem; border-radius: 4px;
+    }
+    .balance-tag {
+      font-size: .62rem; font-weight: 700;
+      color: var(--dim); letter-spacing: .06em;
+    }
+    /* 3-col grid: left team | vs | right team */
+    .mc-body {
+      display: grid;
+      grid-template-columns: 1fr 56px 1fr;
+      align-items: center;
+      padding: 1rem .9rem;
+      gap: .25rem;
+    }
+    .mc-team { display: flex; flex-direction: column; gap: .38rem; }
+    .mc-team.r { align-items: flex-end; }
+    .mc-player {
+      display: flex; align-items: center; gap: .38rem;
+      font-size: .875rem; font-weight: 600;
+    }
+    .mc-team.r .mc-player { flex-direction: row-reverse; }
+    .skill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .vs-col {
+      display: flex; flex-direction: column; align-items: center; gap: .3rem;
+    }
+    .vs-word {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem; line-height: 1;
+      color: var(--muted); letter-spacing: .04em;
+    }
+    .bal-bar {
+      width: 40px; height: 3px; border-radius: 2px;
+      background: var(--border); overflow: hidden;
+    }
+    .bal-fill { height: 100%; background: var(--lime); transition: width .3s; }
+    .mc-foot {
+      padding: .5rem .9rem;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .mc-foot-info { font-size: .7rem; color: var(--muted); font-weight: 500; }
+    .btn-done {
+      font-family: inherit; font-size: .75rem; font-weight: 700;
+      padding: .36rem .85rem; border-radius: 6px;
+      background: var(--lime-dim); border: 1px solid var(--lime-border);
+      color: var(--lime); cursor: pointer; transition: all .15s;
+      letter-spacing: .02em;
+    }
+    .btn-done:hover { background: rgba(201,255,0,.18); box-shadow: 0 0 14px var(--lime-glow); }
+
+    /* ─── Sitting out ────────────────────────────────────── */
+    .sitting-strip {
+      margin-top: .7rem;
+      padding: .6rem .85rem;
+      background: rgba(255,255,255,.025);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      display: flex; flex-wrap: wrap; gap: .4rem; align-items: center;
+      font-size: .78rem; color: var(--dim);
+    }
+    .sitting-lbl {
+      font-size: .6rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--muted); margin-right: .15rem;
+    }
+
+    /* ─── Stats ──────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      gap: .45rem;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: .8rem .85rem .65rem;
+      display: flex; flex-direction: column; gap: .18rem;
+      position: relative; overflow: hidden;
+      transition: border-color .14s;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--sc, var(--muted)); opacity: .5;
+    }
+    .stat-card:hover { border-color: var(--border-hi); }
+    .stat-rank { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.1rem; line-height: 1; color: var(--lime);
+    }
+    .stat-name { font-size: .78rem; font-weight: 700; color: var(--text); }
+    .stat-sub  { font-size: .62rem; color: var(--muted); margin-top: .05rem; }
+    .reset-row { display: flex; justify-content: flex-end; gap: .45rem; margin-top: .85rem; }
+
+    /* ─── History ────────────────────────────────────────── */
+    .hist-list { display: flex; flex-direction: column; gap: .35rem; }
+    .hist-row {
+      display: flex; align-items: center; gap: .55rem;
+      padding: .5rem .75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      font-size: .8rem;
+      transition: background .13s;
+    }
+    .hist-row:hover { background: var(--card-hi); }
+    .hist-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: .04em; color: var(--muted);
+      min-width: 1.7rem;
+    }
+    .hist-badge {
+      font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+      padding: .14rem .42rem; border-radius: 4px;
+      background: rgba(255,255,255,.045); color: var(--muted);
+      border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .hist-players { flex: 1; font-weight: 500; color: var(--text); }
+    .hist-vs { color: var(--muted); font-weight: 400; margin: 0 .22rem; font-size: .75rem; }
+    .hist-time { font-size: .67rem; color: var(--muted); white-space: nowrap; font-weight: 600; }
+
+    /* ─── Empty ──────────────────────────────────────────── */
+    .empty {
+      text-align: center; color: var(--muted); font-size: .82rem;
+      padding: 1.5rem 0; font-style: italic;
+    }
+
+    /* ─── Toast ──────────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: var(--card-hi); border: 1px solid var(--border-hi);
+      color: var(--text); padding: .52rem 1.2rem;
+      border-radius: 20px; font-size: .82rem; font-weight: 600;
+      opacity: 0; transition: opacity .2s, transform .2s;
+      pointer-events: none; z-index: 200;
+      box-shadow: 0 6px 28px rgba(0,0,0,.6);
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media (max-width: 480px) {
+      main { padding: 1rem .75rem; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .mc-body { grid-template-columns: 1fr 44px 1fr; padding: .75rem .65rem; }
+      .vs-word { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="hd-icon">🏸</span>
+  <div class="hd-wordmark">BAD<em>minton</em></div>
+  <span class="hd-tag">Match&thinsp;Maker</span>
+  <button id="theme-btn" title="Toggle light/dark mode">🌙</button>
+</header>
+
+<main id="app"></main>
+<footer>Made with <span class="heart">❤️</span> by <a href="#">veejayts</a></footer>
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const DEFAULT_STATE = {
+  players: [],
+  matchType: 'doubles',
+  courts: 1,
+  activeMatches: [],
+  sitting: [],
+  history: [],
+  nextId: 1,
+};
+
+let state = loadState();
+
+function loadState() {
+  try {
+    return JSON.parse(localStorage.getItem('badminton_v1')) || structuredClone(DEFAULT_STATE);
+  } catch { return structuredClone(DEFAULT_STATE); }
+}
+
+function saveState() {
+  localStorage.setItem('badminton_v1', JSON.stringify(state));
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+const SKILL_LABEL = { 1: 'Beg', 2: 'Int', 3: 'Adv' };
+const SKILL_COLOR = { 1: '#4DA6FF', 2: '#FFB627', 3: '#FF4C4C' };
+
+function sp(skill) {
+  return `<span class="sp sp-${skill}">${SKILL_LABEL[skill]}</span>`;
+}
+
+function playerById(id) {
+  return state.players.find(p => p.id === id);
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Algorithm ──────────────────────────────────────────────────────────────
+function balanceDoubles(group) {
+  const opts = [[[0,1],[2,3]], [[0,2],[1,3]], [[0,3],[1,2]]];
+  let best = null, bestDiff = Infinity;
+  for (const [t1i, t2i] of opts) {
+    const t1 = t1i.map(i => group[i]);
+    const t2 = t2i.map(i => group[i]);
+    const diff = Math.abs(t1[0].skill + t1[1].skill - t2[0].skill - t2[1].skill);
+    if (diff < bestDiff) { bestDiff = diff; best = { team1: t1, team2: t2 }; }
+  }
+  return best;
+}
+
+function generateMatches() {
+  const { players, matchType, courts } = state;
+  const perCourt = matchType === 'doubles' ? 4 : 2;
+  if (players.length < perCourt) { toast(`Need at least ${perCourt} players for ${matchType}`); return; }
+
+  const sorted = [...players].sort((a, b) => a.gamesPlayed - b.gamesPlayed || a.skill - b.skill);
+  const actualCourts = Math.min(courts, Math.floor(sorted.length / perCourt));
+  if (actualCourts === 0) { toast(`Not enough players for a ${matchType} match`); return; }
+
+  const playing = sorted.slice(0, actualCourts * perCourt);
+  const sitting = sorted.slice(actualCourts * perCourt);
+  state.sitting = sitting.map(p => p.id);
+  state.activeMatches = [];
+
+  if (matchType === 'doubles') {
+    for (let i = 0; i < actualCourts; i++) {
+      const group = playing.slice(i * 4, (i + 1) * 4);
+      const { team1, team2 } = balanceDoubles(group);
+      state.activeMatches.push({ id: Date.now() + i, court: i + 1, type: 'doubles',
+        team1: team1.map(p => p.id), team2: team2.map(p => p.id) });
+    }
+  } else {
+    const bySkill = [...playing].sort((a, b) => b.skill - a.skill);
+    for (let i = 0; i < actualCourts; i++) {
+      state.activeMatches.push({ id: Date.now() + i, court: i + 1, type: 'singles',
+        player1: bySkill[i * 2].id, player2: bySkill[i * 2 + 1].id });
+    }
+  }
+
+  saveState(); render();
+  toast(`Round generated — ${actualCourts} court${actualCourts > 1 ? 's' : ''}`);
+}
+
+function snapshotMatch(match) {
+  const at = Date.now();
+  if (match.type === 'doubles') {
+    const snap = id => { const q = playerById(id); return q ? { name: q.name, skill: q.skill } : null; };
+    return { at, type: 'doubles', court: match.court,
+      team1: match.team1.map(snap).filter(Boolean),
+      team2: match.team2.map(snap).filter(Boolean) };
+  }
+  const p1 = playerById(match.player1), p2 = playerById(match.player2);
+  return { at, type: 'singles', court: match.court,
+    player1: p1 ? { name: p1.name, skill: p1.skill } : null,
+    player2: p2 ? { name: p2.name, skill: p2.skill } : null };
+}
+
+function completeMatch(matchId) {
+  const match = state.activeMatches.find(m => m.id === matchId);
+  if (!match) return;
+  const ids = match.type === 'doubles' ? [...match.team1, ...match.team2] : [match.player1, match.player2];
+  ids.forEach(id => { const p = playerById(id); if (p) p.gamesPlayed++; });
+  state.history.unshift(snapshotMatch(match));
+  state.activeMatches = state.activeMatches.filter(m => m.id !== matchId);
+  saveState(); render(); toast('Match complete ✓');
+}
+
+function completeAllMatches() {
+  state.activeMatches.forEach(match => {
+    const ids = match.type === 'doubles' ? [...match.team1, ...match.team2] : [match.player1, match.player2];
+    ids.forEach(id => { const p = playerById(id); if (p) p.gamesPlayed++; });
+    state.history.unshift(snapshotMatch(match));
+  });
+  state.activeMatches = []; state.sitting = [];
+  saveState(); render(); toast('All matches complete ✓');
+}
+
+function addPlayer(name, skill) {
+  name = name.trim();
+  if (!name) return;
+  if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Player already exists'); return; }
+  state.players.push({ id: state.nextId++, name, skill: +skill, gamesPlayed: 0 });
+  saveState(); render();
+}
+
+function removePlayer(id) {
+  state.players = state.players.filter(p => p.id !== id);
+  state.activeMatches = state.activeMatches.filter(m =>
+    m.type === 'doubles' ? !m.team1.includes(id) && !m.team2.includes(id) : m.player1 !== id && m.player2 !== id);
+  state.sitting = state.sitting.filter(s => s !== id);
+  saveState(); render();
+}
+
+function resetStats() {
+  if (!confirm('Reset all game counts to zero? This also clears history.')) return;
+  state.players.forEach(p => p.gamesPlayed = 0);
+  state.activeMatches = []; state.sitting = []; state.history = [];
+  saveState(); render(); toast('Stats reset');
+}
+
+function resetAll() {
+  if (!confirm('Clear everything and start fresh?')) return;
+  state = structuredClone(DEFAULT_STATE); saveState(); render();
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById('app').innerHTML =
+    renderPlayers() + renderSettings() + renderMatches() + renderStats() + renderHistory();
+  bindEvents();
+}
+
+function renderPlayers() {
+  const rows = state.players.map(p => {
+    const isActive = state.activeMatches.some(m =>
+      m.type === 'doubles' ? m.team1.includes(p.id) || m.team2.includes(p.id) : m.player1 === p.id || m.player2 === p.id);
+    const isSitting = state.sitting.includes(p.id);
+    const dotColor = isActive ? 'var(--lime)' : isSitting ? 'var(--muted)' : 'transparent';
+    const dotTitle = isActive ? 'Playing' : isSitting ? 'Sitting out' : '';
+    return `
+      <div class="player-row" style="--lc:${SKILL_COLOR[p.skill]}">
+        <span class="status-dot" style="background:${dotColor}" title="${dotTitle}"></span>
+        <span class="pname">${escHtml(p.name)}</span>
+        ${sp(p.skill)}
+        <span class="pgames">${p.gamesPlayed}g</span>
+        <button class="rm-btn remove-btn" data-id="${p.id}" title="Remove">✕</button>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">Players <b>(${state.players.length})</b></span>
+      </div>
+      <div class="sec-body">
+        <form class="add-form" id="add-form" autocomplete="off">
+          <input class="f" type="text" id="player-name" placeholder="Player name" maxlength="24" />
+          <select class="f" id="player-skill">
+            <option value="1">Beginner</option>
+            <option value="2" selected>Intermediate</option>
+            <option value="3">Advanced</option>
+          </select>
+          <button class="btn btn-lime" type="submit">Add</button>
+        </form>
+        ${state.players.length > 0
+          ? `<div class="player-list">${rows}</div>`
+          : `<div class="empty" style="margin-top:.75rem">No players yet — add some above</div>`}
+      </div>
+    </div>`;
+}
+
+function renderSettings() {
+  const { matchType, courts, activeMatches } = state;
+  const hasActive = activeMatches.length > 0;
+  return `
+    <div class="section">
+      <div class="sec-head"><span class="sec-title">Match Settings</span></div>
+      <div class="sec-body">
+        <div class="settings-row">
+          <div class="toggle-group">
+            <button class="tb ${matchType === 'singles' ? 'on' : ''}" id="toggle-singles">Singles</button>
+            <button class="tb ${matchType === 'doubles' ? 'on' : ''}" id="toggle-doubles">Doubles</button>
+          </div>
+          <label class="courts-wrap">
+            Courts
+            <input class="courts-num" type="number" id="courts-input" value="${courts}" min="1" max="10" />
+          </label>
+        </div>
+        <div class="gen-row">
+          <button class="btn-gen" id="generate-btn" ${state.players.length < 2 ? 'disabled' : ''}>
+            ${hasActive ? 'Regenerate Round' : 'Generate Round'}
+          </button>
+          ${hasActive ? `<button class="btn btn-ghost" id="complete-all-btn">Complete All</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderMatches() {
+  const { activeMatches, sitting } = state;
+  if (activeMatches.length === 0 && sitting.length === 0) return '';
+
+  const cards = activeMatches.map(m => {
+    if (m.type === 'doubles') {
+      const t1 = m.team1.map(id => playerById(id)).filter(Boolean);
+      const t2 = m.team2.map(id => playerById(id)).filter(Boolean);
+      const s1 = t1.reduce((s, p) => s + p.skill, 0);
+      const s2 = t2.reduce((s, p) => s + p.skill, 0);
+      const balPct = s1 + s2 > 0 ? Math.round((s1 / (s1 + s2)) * 100) : 50;
+      return `
+        <div class="match-card">
+          <div class="mc-head">
+            <span class="court-tag">Court ${m.court} · Doubles</span>
+            <span class="balance-tag">Balance ${s1} — ${s2}</span>
+          </div>
+          <div class="mc-body">
+            <div class="mc-team">
+              ${t1.map(p => `
+                <div class="mc-player">
+                  <span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span>
+                  ${escHtml(p.name)}&thinsp;${sp(p.skill)}
+                </div>`).join('')}
+            </div>
+            <div class="vs-col">
+              <span class="vs-word">VS</span>
+              <div class="bal-bar"><div class="bal-fill" style="width:${balPct}%"></div></div>
+            </div>
+            <div class="mc-team r">
+              ${t2.map(p => `
+                <div class="mc-player">
+                  ${sp(p.skill)}&thinsp;${escHtml(p.name)}
+                  <span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span>
+                </div>`).join('')}
+            </div>
+          </div>
+          <div class="mc-foot">
+            <span class="mc-foot-info">${t1.map(p=>p.gamesPlayed).join('+')} played &nbsp;·&nbsp; ${t2.map(p=>p.gamesPlayed).join('+')} played</span>
+            <button class="btn-done complete-match-btn" data-id="${m.id}">Mark Complete</button>
+          </div>
+        </div>`;
+    } else {
+      const p1 = playerById(m.player1), p2 = playerById(m.player2);
+      if (!p1 || !p2) return '';
+      return `
+        <div class="match-card">
+          <div class="mc-head">
+            <span class="court-tag">Court ${m.court} · Singles</span>
+            <span class="balance-tag">${SKILL_LABEL[p1.skill]} vs ${SKILL_LABEL[p2.skill]}</span>
+          </div>
+          <div class="mc-body">
+            <div class="mc-team">
+              <div class="mc-player">
+                <span class="skill-dot" style="background:${SKILL_COLOR[p1.skill]}"></span>
+                ${escHtml(p1.name)}&thinsp;${sp(p1.skill)}
+              </div>
+            </div>
+            <div class="vs-col">
+              <span class="vs-word">VS</span>
+            </div>
+            <div class="mc-team r">
+              <div class="mc-player">
+                ${sp(p2.skill)}&thinsp;${escHtml(p2.name)}
+                <span class="skill-dot" style="background:${SKILL_COLOR[p2.skill]}"></span>
+              </div>
+            </div>
+          </div>
+          <div class="mc-foot">
+            <span class="mc-foot-info">${p1.gamesPlayed} played &nbsp;·&nbsp; ${p2.gamesPlayed} played</span>
+            <button class="btn-done complete-match-btn" data-id="${m.id}">Mark Complete</button>
+          </div>
+        </div>`;
+    }
+  }).join('');
+
+  const sittingHtml = sitting.length > 0 ? `
+    <div class="sitting-strip">
+      <span class="sitting-lbl">Sitting out</span>
+      ${sitting.map(id => { const p = playerById(id); return p ? `${escHtml(p.name)}&thinsp;${sp(p.skill)}` : ''; }).filter(Boolean).join('<span style="color:var(--muted);margin:0 .3rem">·</span>')}
+    </div>` : '';
+
+  return `
+    <div class="section">
+      <div class="sec-head"><span class="sec-title">Active Matches <b>(${activeMatches.length})</b></span></div>
+      <div class="sec-body">
+        <div class="matches-list">${cards}</div>
+        ${sittingHtml}
+      </div>
+    </div>`;
+}
+
+function renderStats() {
+  if (state.players.length === 0) return '';
+  const sorted = [...state.players].sort((a, b) => b.gamesPlayed - a.gamesPlayed);
+  const max = sorted[0]?.gamesPlayed || 0;
+  const ranks = ['🥇','🥈','🥉'];
+
+  const cards = sorted.map((p, i) => {
+    const isTop = p.gamesPlayed === max && max > 0;
+    return `
+      <div class="stat-card" style="--sc:${SKILL_COLOR[p.skill]}">
+        <div class="stat-rank">${isTop ? '🔥 Most' : (ranks[i] || `#${i+1}`)}</div>
+        <div class="stat-num">${p.gamesPlayed}</div>
+        <div class="stat-name">${escHtml(p.name)}</div>
+        <div class="stat-sub">${sp(p.skill)}</div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="sec-head"><span class="sec-title">Stats</span></div>
+      <div class="sec-body">
+        <div class="stats-grid">${cards}</div>
+        <div class="reset-row">
+          <button class="btn btn-ghost btn-sm" id="reset-stats-btn">Reset stats</button>
+          <button class="btn btn-red btn-sm" id="reset-all-btn">Clear all</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderHistory() {
+  if (!state.history || state.history.length === 0) return '';
+
+  const fmt = ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const pStr = p => p ? `${escHtml(p.name)}&thinsp;${sp(p.skill)}` : '?';
+
+  const rows = state.history.map((h, i) => {
+    let body;
+    if (h.type === 'doubles') {
+      const t1 = h.team1.map(pStr).join(' <span style="color:var(--muted);font-size:.72rem">&</span> ');
+      const t2 = h.team2.map(pStr).join(' <span style="color:var(--muted);font-size:.72rem">&</span> ');
+      body = `${t1}<span class="hist-vs">vs</span>${t2}`;
+    } else {
+      body = `${pStr(h.player1)}<span class="hist-vs">vs</span>${pStr(h.player2)}`;
+    }
+    return `
+      <div class="hist-row">
+        <span class="hist-n">#${state.history.length - i}</span>
+        <span class="hist-badge">${h.type}</span>
+        <span class="hist-players">${body}</span>
+        <span class="hist-time">${fmt(h.at)}</span>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="section">
+      <div class="sec-head">
+        <span class="sec-title">History <b>(${state.history.length})</b></span>
+        <button class="btn btn-ghost btn-sm" id="clear-history-btn">Clear</button>
+      </div>
+      <div class="sec-body">
+        <div class="hist-list">${rows}</div>
+      </div>
+    </div>`;
+}
+
+// ── Events ─────────────────────────────────────────────────────────────────
+function bindEvents() {
+  document.getElementById('add-form')?.addEventListener('submit', e => {
+    e.preventDefault();
+    addPlayer(document.getElementById('player-name').value, document.getElementById('player-skill').value);
+    document.getElementById('player-name').value = '';
+    document.getElementById('player-name').focus();
+  });
+
+  document.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', () => removePlayer(+b.dataset.id)));
+
+  document.getElementById('toggle-singles')?.addEventListener('click', () => { state.matchType = 'singles'; saveState(); render(); });
+  document.getElementById('toggle-doubles')?.addEventListener('click', () => { state.matchType = 'doubles'; saveState(); render(); });
+
+  document.getElementById('courts-input')?.addEventListener('change', e => {
+    state.courts = Math.max(1, Math.min(10, +e.target.value || 1)); saveState();
+  });
+
+  document.getElementById('generate-btn')?.addEventListener('click', generateMatches);
+  document.getElementById('complete-all-btn')?.addEventListener('click', completeAllMatches);
+  document.querySelectorAll('.complete-match-btn').forEach(b => b.addEventListener('click', () => completeMatch(+b.dataset.id)));
+
+  document.getElementById('reset-stats-btn')?.addEventListener('click', resetStats);
+  document.getElementById('reset-all-btn')?.addEventListener('click', resetAll);
+  document.getElementById('clear-history-btn')?.addEventListener('click', () => {
+    if (!confirm('Clear match history?')) return;
+    state.history = []; saveState(); render(); toast('History cleared');
+  });
+}
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+function applyTheme(light) {
+  document.documentElement.classList.toggle('light', light);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = light ? '🌙' : '☀️';
+  // dark → show ☀️ (click to go light); light → show 🌙 (click to go dark)
+  if (btn) btn.title = light ? 'Switch to dark mode' : 'Switch to light mode';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('badminton_theme');
+  applyTheme(saved === 'light');
+  // theme-btn is in static HTML (not re-rendered), so bind once here
+  document.getElementById('theme-btn').addEventListener('click', () => {
+    const nowLight = !document.documentElement.classList.contains('light');
+    localStorage.setItem('badminton_theme', nowLight ? 'light' : 'dark');
+    applyTheme(nowLight);
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+render();
+initTheme();
+</script>
+</body>
+</html>

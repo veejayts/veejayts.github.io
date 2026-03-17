@@ -17,10 +17,12 @@
       --text:         #EEEEF8;
       --dim:          #8888AA;
       --muted:        #44445A;
+
       --lime:         #C9FF00;
       --lime-dim:     rgba(201,255,0,0.09);
       --lime-glow:    rgba(201,255,0,0.22);
       --lime-border:  rgba(201,255,0,0.28);
+
       --beg:          #4DA6FF;
       --beg-bg:       rgba(77,166,255,0.12);
       --beg-border:   rgba(77,166,255,0.28);
@@ -30,9 +32,12 @@
       --adv:          #FF4C4C;
       --adv-bg:       rgba(255,76,76,0.12);
       --adv-border:   rgba(255,76,76,0.28);
-      --r: 10px; --r-sm: 7px;
+
+      --r:  10px;
+      --r-sm: 7px;
     }
 
+    /* ─── Light mode ─────────────────────────────────────── */
     .light {
       --bg:           #F0F0F8;
       --surface:      #FAFAFE;
@@ -67,7 +72,9 @@
         linear-gradient(var(--grid-line, rgba(201,255,0,0.022)) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid-line, rgba(201,255,0,0.022)) 1px, transparent 1px);
       background-size: 52px 52px;
-      color: var(--text); min-height: 100vh; padding-bottom: 5rem;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 5rem;
       transition: background-color .2s, color .2s;
     }
     .light { --grid-line: rgba(0,0,0,0.045); }
@@ -76,7 +83,8 @@
     header {
       position: sticky; top: 0; z-index: 60;
       background: var(--header-bg, rgba(7,7,13,0.82));
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: .85rem 1.5rem;
       display: flex; align-items: center; gap: .75rem;
@@ -84,39 +92,69 @@
     }
     .light header { --header-bg: rgba(240,240,248,0.88); }
     .hd-icon { font-size: 1.5rem; line-height: 1; }
-    .hd-wordmark { font-family: 'Bebas Neue', sans-serif; font-size: 1.75rem; letter-spacing: .06em; line-height: 1; }
+    .hd-wordmark {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.75rem; letter-spacing: .06em; line-height: 1;
+    }
     .hd-wordmark em { color: var(--lime); font-style: normal; }
-    .hd-tag { margin-left: auto; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .hd-tag {
+      margin-left: auto;
+      font-size: .62rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    }
     #theme-btn {
-      background: var(--card); border: 1px solid var(--border-hi); color: var(--dim);
-      border-radius: 20px; padding: .3rem .65rem; font-size: .82rem;
-      cursor: pointer; transition: all .15s; line-height: 1; display: flex; align-items: center;
+      background: var(--card); border: 1px solid var(--border-hi);
+      color: var(--dim); border-radius: 20px;
+      padding: .3rem .65rem; font-size: .82rem;
+      cursor: pointer; transition: all .15s; line-height: 1;
+      display: flex; align-items: center; gap: .3rem;
     }
     #theme-btn:hover { border-color: var(--lime); color: var(--lime); }
 
     /* ─── Footer ─────────────────────────────────────────── */
-    footer { text-align: center; padding: 2rem 1rem 1.5rem; font-size: .75rem; color: var(--muted); font-weight: 500; }
+    footer {
+      text-align: center; padding: 2rem 1rem 1.5rem;
+      font-size: .75rem; color: var(--muted); font-weight: 500;
+    }
     footer .heart { color: #FF4C4C; }
     footer a { color: var(--dim); text-decoration: none; }
     footer a:hover { color: var(--lime); }
 
     /* ─── Layout ─────────────────────────────────────────── */
-    main { max-width: 680px; margin: 0 auto; padding: 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 1.2rem; }
+    main {
+      max-width: 680px; margin: 0 auto;
+      padding: 1.5rem 1.25rem;
+      display: flex; flex-direction: column; gap: 1.2rem;
+    }
 
     /* ─── Sections ───────────────────────────────────────── */
-    .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; animation: rise .22s ease both; }
-    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .sec-head { padding: .65rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-    .sec-title { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .15em; color: var(--muted); }
+    .section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+      animation: rise .22s ease both;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .sec-head {
+      padding: .65rem 1rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+    }
+    .sec-title {
+      font-size: .62rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .15em; color: var(--muted);
+    }
     .sec-title b { color: var(--dim); font-weight: 800; }
-    .sec-head-btns { display: flex; gap: .35rem; align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+    .sec-head-btns { display: flex; gap: .35rem; align-items: center; flex-shrink: 0; }
     .sec-body { padding: 1rem; }
 
     /* ─── Form controls ──────────────────────────────────── */
     .add-form { display: flex; gap: .45rem; flex-wrap: wrap; }
     input.f, select.f {
-      background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm);
-      color: var(--text); padding: .58rem .85rem; font-size: .875rem; font-family: inherit;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      padding: .58rem .85rem; font-size: .875rem; font-family: inherit;
       outline: none; transition: border-color .15s, background .15s;
     }
     input.f { flex: 1; min-width: 130px; }
@@ -138,14 +176,22 @@
     .btn-lime { background: var(--lime); color: #000; letter-spacing: .02em; }
     .btn-lime:hover { filter: brightness(1.08); box-shadow: 0 0 22px var(--lime-glow); }
     .btn-lime:disabled { opacity: .3; cursor: not-allowed; filter: none; box-shadow: none; }
-    .btn-ghost { background: transparent; border: 1px solid var(--border-hi); color: var(--dim); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border-hi); color: var(--dim);
+    }
     .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
-    .btn-red { background: transparent; border: 1px solid rgba(255,76,76,.3); color: var(--adv); }
+    .btn-red {
+      background: transparent; border: 1px solid rgba(255,76,76,.3); color: var(--adv);
+    }
     .btn-red:hover { border-color: var(--adv); background: rgba(255,76,76,.08); }
     .btn-sm { padding: .28rem .65rem; font-size: .7rem; }
 
     /* ─── Skill pills ────────────────────────────────────── */
-    .sp { display: inline-block; font-size: .6rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: .17rem .48rem; border-radius: 20px; vertical-align: middle; }
+    .sp {
+      display: inline-block; font-size: .6rem; font-weight: 800;
+      letter-spacing: .07em; text-transform: uppercase;
+      padding: .17rem .48rem; border-radius: 20px; vertical-align: middle;
+    }
     .sp-1 { background: var(--beg-bg); color: var(--beg); border: 1px solid var(--beg-border); }
     .sp-2 { background: var(--int-bg); color: var(--int); border: 1px solid var(--int-border); }
     .sp-3 { background: var(--adv-bg); color: var(--adv); border: 1px solid var(--adv-border); }
@@ -153,120 +199,232 @@
     /* ─── Player list ────────────────────────────────────── */
     .player-list { display: flex; flex-direction: column; gap: .38rem; margin-top: .75rem; }
     .player-row {
-      display: flex; align-items: center; gap: .5rem;
-      padding: .5rem .75rem;
+      display: flex; align-items: center; gap: .55rem;
+      padding: .55rem .85rem;
       background: var(--card); border: 1px solid var(--border);
       border-left: 3px solid var(--lc, var(--border));
-      border-radius: var(--r-sm); transition: background .14s, opacity .2s;
+      border-radius: var(--r-sm); transition: background .14s;
     }
     .player-row:hover { background: var(--card-hi); }
-    .player-row.absent { opacity: .42; }
-    .player-row.absent .pname { color: var(--dim); }
     .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-    .pname { flex: 1; font-size: .875rem; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pwl { font-size: .68rem; color: var(--dim); font-weight: 700; white-space: nowrap; }
-    .pwl .w { color: var(--lime); }
-    /* absent toggle button */
-    .away-btn {
-      font-size: .65rem; font-weight: 700;
-      padding: .18rem .48rem; border-radius: 4px;
-      border: 1px solid var(--border); background: transparent; color: var(--muted);
-      cursor: pointer; transition: all .13s; white-space: nowrap; font-family: inherit;
-      flex-shrink: 0;
+    .pname { flex: 1; font-size: .875rem; font-weight: 600; }
+    .pwl {
+      font-size: .68rem; color: var(--dim); font-weight: 700;
+      white-space: nowrap; letter-spacing: .02em;
     }
-    .away-btn:hover { border-color: var(--int); color: var(--int); }
-    .away-btn.is-away { border-color: var(--int-border); background: var(--int-bg); color: var(--int); }
+    .pwl-w { color: var(--lime); }
     .rm-btn {
-      background: none; border: none; cursor: pointer; color: var(--muted); font-size: .8rem;
-      padding: .15rem .3rem; border-radius: 4px; line-height: 1;
-      transition: color .13s, background .13s; flex-shrink: 0;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .8rem;
+      padding: .15rem .3rem; border-radius: 4px;
+      line-height: 1; transition: color .13s, background .13s;
     }
     .rm-btn:hover { color: var(--adv); background: rgba(255,76,76,.1); }
 
     /* ─── Match settings ─────────────────────────────────── */
     .settings-row { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
-    .toggle-group { display: flex; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 3px; gap: 3px; }
-    .tb { padding: .38rem .9rem; border: none; background: transparent; color: var(--dim); font-family: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; border-radius: 5px; transition: all .14s; }
+    .toggle-group {
+      display: flex; background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 3px; gap: 3px;
+    }
+    .tb {
+      padding: .38rem .9rem; border: none; background: transparent; color: var(--dim);
+      font-family: inherit; font-size: .8rem; font-weight: 700;
+      cursor: pointer; border-radius: 5px; transition: all .14s;
+    }
     .tb.on { background: var(--lime); color: #000; }
-    .courts-wrap { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--dim); font-weight: 600; }
-    .courts-num { width: 44px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: .36rem .4rem; text-align: center; font-size: .875rem; font-family: inherit; outline: none; }
+    .courts-wrap {
+      display: flex; align-items: center; gap: .4rem;
+      font-size: .78rem; color: var(--dim); font-weight: 600;
+    }
+    .courts-num {
+      width: 44px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text);
+      padding: .36rem .4rem; text-align: center;
+      font-size: .875rem; font-family: inherit; outline: none;
+    }
     .courts-num:focus { border-color: var(--lime); }
     .gen-row { margin-top: .85rem; display: flex; gap: .45rem; }
-    .btn-gen { flex: 1; background: var(--lime); color: #000; border: none; border-radius: var(--r-sm); font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: .12em; padding: .72rem 1rem; cursor: pointer; transition: all .15s; }
+    .btn-gen {
+      flex: 1; background: var(--lime); color: #000;
+      border: none; border-radius: var(--r-sm);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.05rem; letter-spacing: .12em;
+      padding: .72rem 1rem; cursor: pointer; transition: all .15s;
+    }
     .btn-gen:hover { filter: brightness(1.09); box-shadow: 0 4px 28px var(--lime-glow); }
     .btn-gen:active { transform: scale(.98); }
     .btn-gen:disabled { opacity: .3; cursor: not-allowed; filter: none; box-shadow: none; }
 
     /* ─── Match cards ────────────────────────────────────── */
     .matches-list { display: flex; flex-direction: column; gap: .75rem; }
-    .match-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; transition: border-color .18s; }
+    .match-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden; transition: border-color .18s;
+    }
     .match-card:hover { border-color: var(--border-hi); }
     .match-card.scoring { border-color: var(--lime-border); }
-    .mc-head { padding: .42rem .9rem; background: linear-gradient(120deg, rgba(201,255,0,0.055) 0%, transparent 60%); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .court-tag { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--lime); background: var(--lime-dim); border: 1px solid var(--lime-border); padding: .14rem .48rem; border-radius: 4px; }
+    .mc-head {
+      padding: .42rem .9rem;
+      background: linear-gradient(120deg, rgba(201,255,0,0.055) 0%, transparent 60%);
+      border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .court-tag {
+      font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--lime); background: var(--lime-dim); border: 1px solid var(--lime-border);
+      padding: .14rem .48rem; border-radius: 4px;
+    }
     .balance-tag { font-size: .62rem; font-weight: 700; color: var(--dim); letter-spacing: .06em; }
-    .mc-body { display: grid; grid-template-columns: 1fr 56px 1fr; align-items: center; padding: 1rem .9rem; gap: .25rem; }
+    .mc-body {
+      display: grid; grid-template-columns: 1fr 56px 1fr;
+      align-items: center; padding: 1rem .9rem; gap: .25rem;
+    }
     .mc-team { display: flex; flex-direction: column; gap: .38rem; }
     .mc-team.r { align-items: flex-end; }
     .mc-player { display: flex; align-items: center; gap: .38rem; font-size: .875rem; font-weight: 600; }
     .mc-team.r .mc-player { flex-direction: row-reverse; }
     .skill-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
     .vs-col { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
-    .vs-word { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; line-height: 1; color: var(--muted); letter-spacing: .04em; }
+    .vs-word {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem; line-height: 1; color: var(--muted); letter-spacing: .04em;
+    }
     .bal-bar { width: 40px; height: 3px; border-radius: 2px; background: var(--border); overflow: hidden; }
     .bal-fill { height: 100%; background: var(--lime); transition: width .3s; }
-    .mc-foot { padding: .5rem .9rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .mc-foot {
+      padding: .5rem .9rem; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
     .mc-foot-info { font-size: .7rem; color: var(--muted); font-weight: 500; }
-    .btn-done { font-family: inherit; font-size: .75rem; font-weight: 700; padding: .36rem .85rem; border-radius: 6px; background: var(--lime-dim); border: 1px solid var(--lime-border); color: var(--lime); cursor: pointer; transition: all .15s; }
+    .btn-done {
+      font-family: inherit; font-size: .75rem; font-weight: 700;
+      padding: .36rem .85rem; border-radius: 6px;
+      background: var(--lime-dim); border: 1px solid var(--lime-border);
+      color: var(--lime); cursor: pointer; transition: all .15s; letter-spacing: .02em;
+    }
     .btn-done:hover { background: rgba(201,255,0,.18); box-shadow: 0 0 14px var(--lime-glow); }
 
     /* ─── Score entry ────────────────────────────────────── */
-    .mc-score { padding: .7rem .9rem; border-top: 1px solid var(--lime-border); background: rgba(201,255,0,.03); display: flex; flex-direction: column; gap: .55rem; }
-    .score-label { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: var(--lime); }
+    .mc-score {
+      padding: .7rem .9rem; border-top: 1px solid var(--lime-border);
+      background: rgba(201,255,0,.03);
+      display: flex; flex-direction: column; gap: .55rem;
+    }
+    .score-label {
+      font-size: .62rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--lime);
+    }
     .score-winner-btns { display: flex; gap: .45rem; }
-    .btn-winner { flex: 1; padding: .55rem .5rem; border-radius: var(--r-sm); border: 1px solid var(--border-hi); background: var(--card-hi); color: var(--text); font-family: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; transition: all .15s; text-align: center; line-height: 1.3; }
-    .btn-winner:hover { border-color: var(--lime); background: var(--lime-dim); color: var(--lime); box-shadow: 0 0 12px var(--lime-glow); }
+    .btn-winner {
+      flex: 1; padding: .55rem .5rem; border-radius: var(--r-sm);
+      border: 1px solid var(--border-hi); background: var(--card-hi);
+      color: var(--text); font-family: inherit; font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: all .15s; text-align: center; line-height: 1.3;
+    }
+    .btn-winner:hover {
+      border-color: var(--lime); background: var(--lime-dim); color: var(--lime);
+      box-shadow: 0 0 12px var(--lime-glow);
+    }
     .score-bottom { display: flex; align-items: center; gap: .5rem; }
-    .score-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: .36rem .65rem; font-size: .82rem; font-family: inherit; outline: none; }
+    .score-input {
+      flex: 1; background: var(--card); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text);
+      padding: .36rem .65rem; font-size: .82rem; font-family: inherit; outline: none;
+    }
     .score-input:focus { border-color: var(--lime); }
     .score-input::placeholder { color: var(--muted); }
-    .cancel-score { background: none; border: none; color: var(--muted); font-size: .75rem; font-weight: 700; cursor: pointer; padding: .3rem .4rem; border-radius: 4px; transition: color .13s; font-family: inherit; }
+    .cancel-score {
+      background: none; border: none; color: var(--muted);
+      font-size: .75rem; font-weight: 700; cursor: pointer;
+      padding: .3rem .4rem; border-radius: 4px; transition: color .13s;
+      font-family: inherit;
+    }
     .cancel-score:hover { color: var(--adv); }
 
     /* ─── Sitting out ────────────────────────────────────── */
-    .sitting-strip { margin-top: .7rem; padding: .6rem .85rem; background: rgba(255,255,255,.025); border: 1px solid var(--border); border-radius: var(--r-sm); display: flex; flex-wrap: wrap; gap: .4rem; align-items: center; font-size: .78rem; color: var(--dim); }
-    .sitting-lbl { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin-right: .15rem; }
+    .sitting-strip {
+      margin-top: .7rem; padding: .6rem .85rem;
+      background: rgba(255,255,255,.025); border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      display: flex; flex-wrap: wrap; gap: .4rem; align-items: center;
+      font-size: .78rem; color: var(--dim);
+    }
+    .sitting-lbl {
+      font-size: .6rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .12em;
+      color: var(--muted); margin-right: .15rem;
+    }
 
     /* ─── Stats ──────────────────────────────────────────── */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .45rem; }
-    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm); padding: .8rem .85rem .65rem; display: flex; flex-direction: column; gap: .15rem; position: relative; overflow: hidden; transition: border-color .14s; }
-    .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--sc, var(--muted)); opacity: .5; }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .45rem;
+    }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: .8rem .85rem .65rem;
+      display: flex; flex-direction: column; gap: .18rem;
+      position: relative; overflow: hidden; transition: border-color .14s;
+    }
+    .stat-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: var(--sc, var(--muted)); opacity: .5;
+    }
     .stat-card:hover { border-color: var(--border-hi); }
     .stat-rank { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); }
     .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.1rem; line-height: 1; color: var(--lime); }
     .stat-name { font-size: .78rem; font-weight: 700; color: var(--text); }
-    .stat-wl { font-size: .65rem; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+    .stat-wl { font-size: .65rem; color: var(--muted); font-weight: 600; letter-spacing: .03em; margin-top: .1rem; }
     .stat-wl .w { color: var(--lime); }
-    .stat-wl .wr { color: var(--dim); }
     .reset-row { display: flex; justify-content: flex-end; gap: .45rem; margin-top: .85rem; }
 
     /* ─── History ────────────────────────────────────────── */
     .hist-list { display: flex; flex-direction: column; gap: .35rem; }
-    .hist-row { display: flex; align-items: center; gap: .5rem; padding: .5rem .75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-sm); font-size: .8rem; transition: background .13s; flex-wrap: wrap; }
+    .hist-row {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .5rem .75rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--r-sm); font-size: .8rem; transition: background .13s;
+    }
     .hist-row:hover { background: var(--card-hi); }
-    .hist-n { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: .04em; color: var(--muted); min-width: 1.7rem; }
-    .hist-badge { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: .14rem .42rem; border-radius: 4px; background: rgba(255,255,255,.045); color: var(--muted); border: 1px solid var(--border); flex-shrink: 0; }
+    .hist-n {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: .04em; color: var(--muted); min-width: 1.7rem;
+    }
+    .hist-badge {
+      font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+      padding: .14rem .42rem; border-radius: 4px;
+      background: rgba(255,255,255,.045); color: var(--muted);
+      border: 1px solid var(--border); flex-shrink: 0;
+    }
     .hist-players { flex: 1; font-weight: 500; color: var(--text); min-width: 0; }
     .hist-vs { color: var(--muted); font-weight: 400; margin: 0 .22rem; font-size: .75rem; }
-    .hist-winner-badge { font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: .14rem .42rem; border-radius: 4px; background: var(--lime-dim); border: 1px solid var(--lime-border); color: var(--lime); white-space: nowrap; flex-shrink: 0; }
-    .hist-score { font-family: 'Bebas Neue', sans-serif; font-size: .9rem; color: var(--dim); letter-spacing: .06em; flex-shrink: 0; }
+    .hist-winner-badge {
+      font-size: .58rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+      padding: .14rem .42rem; border-radius: 4px;
+      background: var(--lime-dim); border: 1px solid var(--lime-border);
+      color: var(--lime); white-space: nowrap; flex-shrink: 0;
+    }
+    .hist-score {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: .9rem; color: var(--dim); letter-spacing: .06em; flex-shrink: 0;
+    }
     .hist-time { font-size: .67rem; color: var(--muted); white-space: nowrap; font-weight: 600; flex-shrink: 0; }
 
     /* ─── Empty ──────────────────────────────────────────── */
     .empty { text-align: center; color: var(--muted); font-size: .82rem; padding: 1.5rem 0; font-style: italic; }
 
     /* ─── Toast ──────────────────────────────────────────── */
-    #toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--card-hi); border: 1px solid var(--border-hi); color: var(--text); padding: .52rem 1.2rem; border-radius: 20px; font-size: .82rem; font-weight: 600; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 200; box-shadow: 0 6px 28px rgba(0,0,0,.6); }
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(14px);
+      background: var(--card-hi); border: 1px solid var(--border-hi);
+      color: var(--text); padding: .52rem 1.2rem;
+      border-radius: 20px; font-size: .82rem; font-weight: 600;
+      opacity: 0; transition: opacity .2s, transform .2s;
+      pointer-events: none; z-index: 200;
+      box-shadow: 0 6px 28px rgba(0,0,0,.6);
+    }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* ─── Responsive ─────────────────────────────────────── */
@@ -301,9 +459,8 @@ const DEFAULT_STATE = {
   activeMatches: [],
   sitting: [],
   history: [],
-  scorePending: null,
-  lastUndo: null,
-  pairHistory: {},  // "minId-maxId" → { together: N, against: N }
+  scorePending: null,   // matchId currently awaiting score entry
+  lastUndo: null,       // snapshot for single-level undo
   nextId: 1,
 };
 
@@ -312,16 +469,14 @@ let state = loadState();
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem('badminton_v1')) || structuredClone(DEFAULT_STATE);
-    // migrations
+    // migrate: ensure new fields exist on players
     s.players.forEach(p => {
-      if (p.wins    === undefined) p.wins    = 0;
-      if (p.losses  === undefined) p.losses  = 0;
-      if (p.absent  === undefined) p.absent  = false;
+      if (p.wins   === undefined) p.wins   = 0;
+      if (p.losses === undefined) p.losses = 0;
     });
-    if (!s.scorePending && s.scorePending !== null) s.scorePending = null;
-    if (s.lastUndo  === undefined) s.lastUndo  = null;
+    if (s.scorePending === undefined) s.scorePending = null;
+    if (s.lastUndo     === undefined) s.lastUndo     = null;
     if (!s.history) s.history = [];
-    if (!s.pairHistory) s.pairHistory = {};
     return s;
   } catch { return structuredClone(DEFAULT_STATE); }
 }
@@ -334,104 +489,45 @@ function saveState() {
 const SKILL_LABEL = { 1: 'Beg', 2: 'Int', 3: 'Adv' };
 const SKILL_COLOR = { 1: '#4DA6FF', 2: '#FFB627', 3: '#FF4C4C' };
 
-function sp(skill) { return `<span class="sp sp-${skill}">${SKILL_LABEL[skill]}</span>`; }
-function playerById(id) { return state.players.find(p => p.id === id); }
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function winRate(p) { return p.wins + p.losses > 0 ? Math.round(p.wins / (p.wins + p.losses) * 100) : null; }
+function sp(skill) {
+  return `<span class="sp sp-${skill}">${SKILL_LABEL[skill]}</span>`;
+}
+
+function playerById(id) {
+  return state.players.find(p => p.id === id);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400);
-}
-
-// ── Pair history helpers ────────────────────────────────────────────────────
-function pairKey(a, b) { return `${Math.min(a,b)}-${Math.max(a,b)}`; }
-
-function getPair(a, b) {
-  return state.pairHistory[pairKey(a, b)] || { together: 0, against: 0 };
-}
-
-function computePairDelta(match) {
-  const delta = {};
-  const add = (key, field) => { if (!delta[key]) delta[key] = { together: 0, against: 0 }; delta[key][field]++; };
-  if (match.type === 'doubles') {
-    if (match.team1.length >= 2) add(pairKey(match.team1[0], match.team1[1]), 'together');
-    if (match.team2.length >= 2) add(pairKey(match.team2[0], match.team2[1]), 'together');
-    for (const a of match.team1) for (const b of match.team2) add(pairKey(a, b), 'against');
-  } else {
-    add(pairKey(match.player1, match.player2), 'against');
-  }
-  return delta;
-}
-
-function applyPairDelta(delta) {
-  for (const [key, d] of Object.entries(delta)) {
-    if (!state.pairHistory[key]) state.pairHistory[key] = { together: 0, against: 0 };
-    state.pairHistory[key].together += d.together;
-    state.pairHistory[key].against  += d.against;
-  }
-}
-
-function reversePairDelta(delta) {
-  for (const [key, d] of Object.entries(delta)) {
-    if (state.pairHistory[key]) {
-      state.pairHistory[key].together -= d.together;
-      state.pairHistory[key].against  -= d.against;
-    }
-  }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
 // ── Algorithm ──────────────────────────────────────────────────────────────
-// Score a doubles split: lower is better.
-// Skill balance is primary; repeated partnerships/matchups add a small penalty.
-function doublesScore(t1, t2) {
-  const skillDiff = Math.abs(t1[0].skill + t1[1].skill - t2[0].skill - t2[1].skill);
-  const togetherPenalty = getPair(t1[0].id, t1[1].id).together + getPair(t2[0].id, t2[1].id).together;
-  const againstPenalty  = getPair(t1[0].id, t2[0].id).against + getPair(t1[0].id, t2[1].id).against
-                        + getPair(t1[1].id, t2[0].id).against + getPair(t1[1].id, t2[1].id).against;
-  return skillDiff * 4 + togetherPenalty * 1.2 + againstPenalty * 0.4;
-}
-
 function balanceDoubles(group) {
   const opts = [[[0,1],[2,3]], [[0,2],[1,3]], [[0,3],[1,2]]];
-  let best = null, bestScore = Infinity;
+  let best = null, bestDiff = Infinity;
   for (const [t1i, t2i] of opts) {
-    const t1 = t1i.map(i => group[i]), t2 = t2i.map(i => group[i]);
-    const score = doublesScore(t1, t2);
-    if (score < bestScore) { bestScore = score; best = { team1: t1, team2: t2 }; }
-  }
-  return best;
-}
-
-// Recursively find the pairing of `players` (even-length) that minimises total score.
-// Skill diff weighted higher than opponent repeats. Fast enough for ≤ ~12 players.
-function singlesScore(a, b) {
-  return Math.abs(a.skill - b.skill) * 4 + getPair(a.id, b.id).against * 1.5;
-}
-
-function bestSinglesPairing(players) {
-  if (players.length === 0) return { pairs: [], score: 0 };
-  if (players.length === 2) return { pairs: [[players[0], players[1]]], score: singlesScore(players[0], players[1]) };
-  let best = null, bestScore = Infinity;
-  for (let i = 1; i < players.length; i++) {
-    const p0 = players[0], p1 = players[i];
-    const rest = players.filter((_, j) => j !== 0 && j !== i);
-    const sub = bestSinglesPairing(rest);
-    const score = singlesScore(p0, p1) + sub.score;
-    if (score < bestScore) { bestScore = score; best = { pairs: [[p0, p1], ...sub.pairs], score }; }
+    const t1 = t1i.map(i => group[i]);
+    const t2 = t2i.map(i => group[i]);
+    const diff = Math.abs(t1[0].skill + t1[1].skill - t2[0].skill - t2[1].skill);
+    if (diff < bestDiff) { bestDiff = diff; best = { team1: t1, team2: t2 }; }
   }
   return best;
 }
 
 function generateMatches() {
-  const { matchType, courts } = state;
+  const { players, matchType, courts } = state;
   const perCourt = matchType === 'doubles' ? 4 : 2;
-  // Only use non-absent players
-  const available = state.players.filter(p => !p.absent);
-  if (available.length < perCourt) { toast(`Need at least ${perCourt} available players for ${matchType}`); return; }
+  if (players.length < perCourt) { toast(`Need at least ${perCourt} players for ${matchType}`); return; }
 
-  const sorted = [...available].sort((a, b) => a.gamesPlayed - b.gamesPlayed || a.skill - b.skill);
+  const sorted = [...players].sort((a, b) => a.gamesPlayed - b.gamesPlayed || a.skill - b.skill);
   const actualCourts = Math.min(courts, Math.floor(sorted.length / perCourt));
   if (actualCourts === 0) { toast(`Not enough players for a ${matchType} match`); return; }
 
@@ -450,11 +546,11 @@ function generateMatches() {
         team1: team1.map(p => p.id), team2: team2.map(p => p.id) });
     }
   } else {
-    const { pairs } = bestSinglesPairing(playing);
-    pairs.forEach(([ p1, p2 ], i) => {
+    const bySkill = [...playing].sort((a, b) => b.skill - a.skill);
+    for (let i = 0; i < actualCourts; i++) {
       state.activeMatches.push({ id: Date.now() + i, court: i + 1, type: 'singles',
-        player1: p1.id, player2: p2.id });
-    });
+        player1: bySkill[i * 2].id, player2: bySkill[i * 2 + 1].id });
+    }
   }
 
   saveState(); render();
@@ -468,45 +564,61 @@ function snapshotMatch(match) {
     const snap = id => { const q = playerById(id); return q ? { name: q.name, skill: q.skill } : null; };
     return { at, type: 'doubles', court: match.court,
       team1: match.team1.map(snap).filter(Boolean),
-      team2: match.team2.map(snap).filter(Boolean), winner: null, score: null };
+      team2: match.team2.map(snap).filter(Boolean),
+      winner: null, score: null };
   }
   const p1 = playerById(match.player1), p2 = playerById(match.player2);
   return { at, type: 'singles', court: match.court,
     player1: p1 ? { name: p1.name, skill: p1.skill } : null,
-    player2: p2 ? { name: p2.name, skill: p2.skill } : null, winner: null, score: null };
+    player2: p2 ? { name: p2.name, skill: p2.skill } : null,
+    winner: null, score: null };
 }
 
 // ── Score entry ────────────────────────────────────────────────────────────
-function openScoreEntry(matchId) { state.scorePending = matchId; saveState(); render(); }
-function cancelScoreEntry()      { state.scorePending = null;    saveState(); render(); }
+function openScoreEntry(matchId) {
+  state.scorePending = matchId;
+  saveState(); render();
+}
+
+function cancelScoreEntry() {
+  state.scorePending = null;
+  saveState(); render();
+}
 
 function completeMatchWithScore(matchId, winner, score) {
   const match = state.activeMatches.find(m => m.id === matchId);
   if (!match) return;
 
-  const winnerIds = match.type === 'doubles'
-    ? (winner === 'team1' ? [...match.team1] : [...match.team2])
-    : (winner === 'player1' ? [match.player1] : [match.player2]);
-  const loserIds = match.type === 'doubles'
-    ? (winner === 'team1' ? [...match.team2] : [...match.team1])
-    : (winner === 'player1' ? [match.player2] : [match.player1]);
+  // Determine winner/loser ids
+  let winnerIds, loserIds;
+  if (match.type === 'doubles') {
+    winnerIds = winner === 'team1' ? [...match.team1] : [...match.team2];
+    loserIds  = winner === 'team1' ? [...match.team2] : [...match.team1];
+  } else {
+    winnerIds = winner === 'player1' ? [match.player1] : [match.player2];
+    loserIds  = winner === 'player1' ? [match.player2] : [match.player1];
+  }
 
+  // Save undo snapshot (player state before change)
   const allIds = [...winnerIds, ...loserIds];
   const playerSnapshots = allIds.map(id => {
     const p = playerById(id);
     return p ? { id: p.id, gamesPlayed: p.gamesPlayed, wins: p.wins, losses: p.losses } : null;
   }).filter(Boolean);
 
+  // Update player stats
   winnerIds.forEach(id => { const p = playerById(id); if (p) { p.gamesPlayed++; p.wins++; } });
-  loserIds.forEach(id =>  { const p = playerById(id); if (p) { p.gamesPlayed++; p.losses++; } });
+  loserIds.forEach(id => { const p = playerById(id); if (p) { p.gamesPlayed++; p.losses++; } });
 
+  // Build history entry
   const entry = snapshotMatch(match);
   entry.winner = winner;
   entry.score  = score?.trim() || null;
   state.history.unshift(entry);
-  const pairDelta = computePairDelta(match);
-  applyPairDelta(pairDelta);
-  state.lastUndo = { match: JSON.parse(JSON.stringify(match)), playerSnapshots, pairDelta };
+
+  // Store undo snapshot
+  state.lastUndo = { match: JSON.parse(JSON.stringify(match)), playerSnapshots };
+
   state.scorePending = null;
   state.activeMatches = state.activeMatches.filter(m => m.id !== matchId);
   saveState(); render(); toast('Match complete ✓');
@@ -516,23 +628,28 @@ function completeMatchWithScore(matchId, winner, score) {
 function undoLastComplete() {
   const undo = state.lastUndo;
   if (!undo) return;
+
+  // Restore player stats
   undo.playerSnapshots.forEach(snap => {
     const p = playerById(snap.id);
     if (p) { p.gamesPlayed = snap.gamesPlayed; p.wins = snap.wins; p.losses = snap.losses; }
   });
-  if (undo.pairDelta) reversePairDelta(undo.pairDelta);
+
+  // Restore match to active
   state.activeMatches.push(undo.match);
+
+  // Remove the history entry that was just added
   state.history.shift();
+
   state.lastUndo = null;
   saveState(); render(); toast('Undone ↩');
 }
 
-// ── Complete all ───────────────────────────────────────────────────────────
+// ── Complete all (no score tracking) ──────────────────────────────────────
 function completeAllMatches() {
   state.activeMatches.forEach(match => {
     const ids = match.type === 'doubles' ? [...match.team1, ...match.team2] : [match.player1, match.player2];
     ids.forEach(id => { const p = playerById(id); if (p) p.gamesPlayed++; });
-    applyPairDelta(computePairDelta(match));
     state.history.unshift(snapshotMatch(match));
   });
   state.activeMatches = []; state.sitting = [];
@@ -545,7 +662,7 @@ function addPlayer(name, skill) {
   name = name.trim();
   if (!name) return;
   if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) { toast('Player already exists'); return; }
-  state.players.push({ id: state.nextId++, name, skill: +skill, gamesPlayed: 0, wins: 0, losses: 0, absent: false });
+  state.players.push({ id: state.nextId++, name, skill: +skill, gamesPlayed: 0, wins: 0, losses: 0 });
   saveState(); render();
 }
 
@@ -557,23 +674,10 @@ function removePlayer(id) {
   saveState(); render();
 }
 
-function toggleAbsent(id) {
-  const p = playerById(id);
-  if (!p) return;
-  p.absent = !p.absent;
-  // remove from sitting/active if they go absent
-  if (p.absent) {
-    state.sitting = state.sitting.filter(s => s !== id);
-    state.activeMatches = state.activeMatches.filter(m =>
-      m.type === 'doubles' ? !m.team1.includes(id) && !m.team2.includes(id) : m.player1 !== id && m.player2 !== id);
-  }
-  saveState(); render();
-}
-
 // ── Regulars ───────────────────────────────────────────────────────────────
 function saveRegulars() {
-  if (state.players.length === 0) { toast('No players to save'); return; }
   const regulars = state.players.map(({ name, skill }) => ({ name, skill }));
+  if (regulars.length === 0) { toast('No players to save'); return; }
   localStorage.setItem('badminton_regulars', JSON.stringify(regulars));
   toast(`Saved ${regulars.length} regulars ✓`);
 }
@@ -585,7 +689,7 @@ function loadRegulars() {
     let added = 0;
     regulars.forEach(({ name, skill }) => {
       if (!state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-        state.players.push({ id: state.nextId++, name, skill: +skill, gamesPlayed: 0, wins: 0, losses: 0, absent: false });
+        state.players.push({ id: state.nextId++, name, skill: +skill, gamesPlayed: 0, wins: 0, losses: 0 });
         added++;
       }
     });
@@ -594,63 +698,12 @@ function loadRegulars() {
   } catch { toast('No regulars saved yet'); }
 }
 
-// ── Session share ──────────────────────────────────────────────────────────
-function shareSession() {
-  const date = new Date().toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
-  const lines = [`🏸 BADminton — ${date}`];
-
-  if (state.players.length > 0) {
-    lines.push('', '── Standings ──');
-    const sorted = [...state.players].sort((a, b) => b.wins - a.wins || b.gamesPlayed - a.gamesPlayed);
-    sorted.forEach((p, i) => {
-      const wr = winRate(p);
-      const wrStr = wr !== null ? ` (${wr}%)` : '';
-      lines.push(`${i + 1}. ${p.name}  ${p.gamesPlayed}G · ${p.wins}W ${p.losses}L${wrStr}`);
-    });
-  }
-
-  if (state.history.length > 0) {
-    lines.push('', '── Matches ──');
-    [...state.history].reverse().forEach((h, i) => {
-      let matchStr;
-      if (h.type === 'doubles') {
-        const t1 = h.team1.map(p => p.name).join(' & ');
-        const t2 = h.team2.map(p => p.name).join(' & ');
-        const winStr = h.winner === 'team1' ? `${t1} won` : h.winner === 'team2' ? `${t2} won` : '';
-        const sc = h.score ? ` ${h.score}` : '';
-        matchStr = `${t1} vs ${t2}${winStr ? ` → ${winStr}${sc}` : ''}`;
-      } else {
-        const p1 = h.player1?.name || '?', p2 = h.player2?.name || '?';
-        const winStr = h.winner === 'player1' ? `${p1} won` : h.winner === 'player2' ? `${p2} won` : '';
-        const sc = h.score ? ` ${h.score}` : '';
-        matchStr = `${p1} vs ${p2}${winStr ? ` → ${winStr}${sc}` : ''}`;
-      }
-      lines.push(`${i + 1}. ${matchStr}`);
-    });
-  }
-
-  const text = lines.join('\n');
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text)
-      .then(() => toast('Session summary copied ✓'))
-      .catch(() => fallbackCopy(text));
-  } else { fallbackCopy(text); }
-}
-
-function fallbackCopy(text) {
-  const ta = document.createElement('textarea');
-  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
-  document.body.appendChild(ta); ta.select();
-  try { document.execCommand('copy'); toast('Session summary copied ✓'); } catch { toast('Copy failed — try manually'); }
-  document.body.removeChild(ta);
-}
-
 // ── Reset ──────────────────────────────────────────────────────────────────
 function resetStats() {
   if (!confirm('Reset all game counts to zero? This also clears history.')) return;
   state.players.forEach(p => { p.gamesPlayed = 0; p.wins = 0; p.losses = 0; });
   state.activeMatches = []; state.sitting = []; state.history = [];
-  state.scorePending = null; state.lastUndo = null; state.pairHistory = {};
+  state.scorePending = null; state.lastUndo = null;
   saveState(); render(); toast('Stats reset');
 }
 
@@ -668,40 +721,34 @@ function render() {
 
 // ── Render: Players ────────────────────────────────────────────────────────
 function renderPlayers() {
-  const presentCount = state.players.filter(p => !p.absent).length;
   const rows = state.players.map(p => {
     const isActive = state.activeMatches.some(m =>
       m.type === 'doubles' ? m.team1.includes(p.id) || m.team2.includes(p.id) : m.player1 === p.id || m.player2 === p.id);
     const isSitting = state.sitting.includes(p.id);
-    const dotColor = p.absent ? 'var(--int)' : isActive ? 'var(--lime)' : isSitting ? 'var(--muted)' : 'transparent';
-    const dotTitle = p.absent ? 'Away' : isActive ? 'Playing' : isSitting ? 'Sitting out' : '';
+    const dotColor = isActive ? 'var(--lime)' : isSitting ? 'var(--muted)' : 'transparent';
     const total = p.wins + p.losses;
     const wlHtml = total > 0
-      ? `<span class="pwl"><span class="w">${p.wins}W</span> ${p.losses}L</span>`
+      ? `<span class="pwl"><span class="pwl-w">${p.wins}W</span> ${p.losses}L</span>`
       : `<span class="pwl" style="color:var(--muted)">${p.gamesPlayed}g</span>`;
     return `
-      <div class="player-row${p.absent ? ' absent' : ''}" style="--lc:${p.absent ? 'var(--muted)' : SKILL_COLOR[p.skill]}">
-        <span class="status-dot" style="background:${dotColor}" title="${dotTitle}"></span>
+      <div class="player-row" style="--lc:${SKILL_COLOR[p.skill]}">
+        <span class="status-dot" style="background:${dotColor}" title="${isActive ? 'Playing' : isSitting ? 'Sitting out' : ''}"></span>
         <span class="pname">${escHtml(p.name)}</span>
         ${sp(p.skill)}
         ${wlHtml}
-        <button class="away-btn${p.absent ? ' is-away' : ''} toggle-absent-btn" data-id="${p.id}" title="${p.absent ? 'Mark as back' : 'Mark as away'}">
-          ${p.absent ? 'Back' : 'Away'}
-        </button>
         <button class="rm-btn remove-btn" data-id="${p.id}" title="Remove">✕</button>
       </div>`;
   }).join('');
 
   const hasRegulars = !!localStorage.getItem('badminton_regulars');
-  const absentCount = state.players.length - presentCount;
 
   return `
     <div class="section">
       <div class="sec-head">
-        <span class="sec-title">Players <b>(${presentCount}${absentCount > 0 ? ` + ${absentCount} away` : ''})</b></span>
+        <span class="sec-title">Players <b>(${state.players.length})</b></span>
         <div class="sec-head-btns">
           ${hasRegulars ? `<button class="btn btn-ghost btn-sm" id="load-regulars-btn">👥 Load</button>` : ''}
-          <button class="btn btn-ghost btn-sm" id="save-regulars-btn">💾 Save</button>
+          <button class="btn btn-ghost btn-sm" id="save-regulars-btn">💾 Save as regulars</button>
         </div>
       </div>
       <div class="sec-body">
@@ -740,7 +787,7 @@ function renderSettings() {
           </label>
         </div>
         <div class="gen-row">
-          <button class="btn-gen" id="generate-btn" ${state.players.filter(p=>!p.absent).length < 2 ? 'disabled' : ''}>
+          <button class="btn-gen" id="generate-btn" ${state.players.length < 2 ? 'disabled' : ''}>
             ${hasActive ? 'Regenerate Round' : 'Generate Round'}
           </button>
           ${hasActive ? `<button class="btn btn-ghost" id="complete-all-btn">Complete All</button>` : ''}
@@ -756,11 +803,19 @@ function renderMatches() {
 
   const cards = activeMatches.map(m => {
     const isScoring = scorePending === m.id;
+
     if (m.type === 'doubles') {
       const t1 = m.team1.map(id => playerById(id)).filter(Boolean);
       const t2 = m.team2.map(id => playerById(id)).filter(Boolean);
-      const s1 = t1.reduce((s, p) => s + p.skill, 0), s2 = t2.reduce((s, p) => s + p.skill, 0);
+      const s1 = t1.reduce((s, p) => s + p.skill, 0);
+      const s2 = t2.reduce((s, p) => s + p.skill, 0);
       const balPct = s1 + s2 > 0 ? Math.round((s1 / (s1 + s2)) * 100) : 50;
+      const scoreSection = isScoring ? renderScoreEntry(m, t1, t2) : '';
+      const normalFoot = isScoring ? '' : `
+        <div class="mc-foot">
+          <span class="mc-foot-info">${t1.map(p=>p.gamesPlayed).join('+')} played &nbsp;·&nbsp; ${t2.map(p=>p.gamesPlayed).join('+')} played</span>
+          <button class="btn-done open-score-btn" data-id="${m.id}">Mark Complete</button>
+        </div>`;
       return `
         <div class="match-card${isScoring ? ' scoring' : ''}">
           <div class="mc-head">
@@ -769,26 +824,35 @@ function renderMatches() {
           </div>
           <div class="mc-body">
             <div class="mc-team">
-              ${t1.map(p => `<div class="mc-player"><span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span>${escHtml(p.name)}&thinsp;${sp(p.skill)}</div>`).join('')}
+              ${t1.map(p => `
+                <div class="mc-player">
+                  <span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span>
+                  ${escHtml(p.name)}&thinsp;${sp(p.skill)}
+                </div>`).join('')}
             </div>
             <div class="vs-col">
               <span class="vs-word">VS</span>
               <div class="bal-bar"><div class="bal-fill" style="width:${balPct}%"></div></div>
             </div>
             <div class="mc-team r">
-              ${t2.map(p => `<div class="mc-player">${sp(p.skill)}&thinsp;${escHtml(p.name)}<span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span></div>`).join('')}
+              ${t2.map(p => `
+                <div class="mc-player">
+                  ${sp(p.skill)}&thinsp;${escHtml(p.name)}
+                  <span class="skill-dot" style="background:${SKILL_COLOR[p.skill]}"></span>
+                </div>`).join('')}
             </div>
           </div>
-          ${isScoring
-            ? renderScoreEntry(m, t1, t2)
-            : `<div class="mc-foot">
-                 <span class="mc-foot-info">${t1.map(p=>p.gamesPlayed).join('+')} played &nbsp;·&nbsp; ${t2.map(p=>p.gamesPlayed).join('+')} played</span>
-                 <button class="btn-done open-score-btn" data-id="${m.id}">Mark Complete</button>
-               </div>`}
+          ${normalFoot}${scoreSection}
         </div>`;
     } else {
       const p1 = playerById(m.player1), p2 = playerById(m.player2);
       if (!p1 || !p2) return '';
+      const scoreSection = isScoring ? renderScoreEntry(m, [p1], [p2]) : '';
+      const normalFoot = isScoring ? '' : `
+        <div class="mc-foot">
+          <span class="mc-foot-info">${p1.gamesPlayed} played &nbsp;·&nbsp; ${p2.gamesPlayed} played</span>
+          <button class="btn-done open-score-btn" data-id="${m.id}">Mark Complete</button>
+        </div>`;
       return `
         <div class="match-card${isScoring ? ' scoring' : ''}">
           <div class="mc-head">
@@ -797,19 +861,20 @@ function renderMatches() {
           </div>
           <div class="mc-body">
             <div class="mc-team">
-              <div class="mc-player"><span class="skill-dot" style="background:${SKILL_COLOR[p1.skill]}"></span>${escHtml(p1.name)}&thinsp;${sp(p1.skill)}</div>
+              <div class="mc-player">
+                <span class="skill-dot" style="background:${SKILL_COLOR[p1.skill]}"></span>
+                ${escHtml(p1.name)}&thinsp;${sp(p1.skill)}
+              </div>
             </div>
             <div class="vs-col"><span class="vs-word">VS</span></div>
             <div class="mc-team r">
-              <div class="mc-player">${sp(p2.skill)}&thinsp;${escHtml(p2.name)}<span class="skill-dot" style="background:${SKILL_COLOR[p2.skill]}"></span></div>
+              <div class="mc-player">
+                ${sp(p2.skill)}&thinsp;${escHtml(p2.name)}
+                <span class="skill-dot" style="background:${SKILL_COLOR[p2.skill]}"></span>
+              </div>
             </div>
           </div>
-          ${isScoring
-            ? renderScoreEntry(m, [p1], [p2])
-            : `<div class="mc-foot">
-                 <span class="mc-foot-info">${p1.gamesPlayed} played &nbsp;·&nbsp; ${p2.gamesPlayed} played</span>
-                 <button class="btn-done open-score-btn" data-id="${m.id}">Mark Complete</button>
-               </div>`}
+          ${normalFoot}${scoreSection}
         </div>`;
     }
   }).join('');
@@ -832,17 +897,23 @@ function renderMatches() {
 
 function renderScoreEntry(match, left, right) {
   const isDoubles = match.type === 'doubles';
-  const ll = left.map(p => escHtml(p.name)).join(' & ');
-  const rl = right.map(p => escHtml(p.name)).join(' & ');
+  const leftLabel  = left.map(p => escHtml(p.name)).join(' & ');
+  const rightLabel = right.map(p => escHtml(p.name)).join(' & ');
+  const winnerLeft  = isDoubles ? 'team1' : 'player1';
+  const winnerRight = isDoubles ? 'team2' : 'player2';
   return `
     <div class="mc-score">
       <span class="score-label">Who won?</span>
       <div class="score-winner-btns">
-        <button class="btn-winner score-win-btn" data-match="${match.id}" data-winner="${isDoubles ? 'team1' : 'player1'}">🏆 ${ll}</button>
-        <button class="btn-winner score-win-btn" data-match="${match.id}" data-winner="${isDoubles ? 'team2' : 'player2'}">🏆 ${rl}</button>
+        <button class="btn-winner score-win-btn" data-match="${match.id}" data-winner="${winnerLeft}">
+          🏆 ${leftLabel}
+        </button>
+        <button class="btn-winner score-win-btn" data-match="${match.id}" data-winner="${winnerRight}">
+          🏆 ${rightLabel}
+        </button>
       </div>
       <div class="score-bottom">
-        <input class="score-input" id="score-val-${match.id}" type="text" placeholder="Score e.g. 21–15 (optional)" maxlength="20" />
+        <input class="score-input" id="score-val-${match.id}" type="text" placeholder="Score, e.g. 21–15 (optional)" maxlength="20" />
         <button class="cancel-score cancel-score-btn">Cancel</button>
       </div>
     </div>`;
@@ -857,7 +928,6 @@ function renderStats() {
 
   const cards = sorted.map((p, i) => {
     const isTop = p.gamesPlayed === max && max > 0;
-    const wr = winRate(p);
     const hasScores = p.wins + p.losses > 0;
     return `
       <div class="stat-card" style="--sc:${SKILL_COLOR[p.skill]}">
@@ -865,19 +935,14 @@ function renderStats() {
         <div class="stat-num">${p.gamesPlayed}</div>
         <div class="stat-name">${escHtml(p.name)}</div>
         ${hasScores
-          ? `<div class="stat-wl"><span class="w">${p.wins}W</span> · ${p.losses}L${wr !== null ? ` · <span class="wr">${wr}%</span>` : ''}</div>`
-          : `<div class="stat-wl" style="color:var(--muted)">${sp(p.skill)}</div>`}
+          ? `<div class="stat-wl"><span class="w">${p.wins}W</span> · ${p.losses}L</div>`
+          : `<div class="stat-sub">${sp(p.skill)}</div>`}
       </div>`;
   }).join('');
 
   return `
     <div class="section">
-      <div class="sec-head">
-        <span class="sec-title">Stats</span>
-        <div class="sec-head-btns">
-          <button class="btn btn-ghost btn-sm" id="share-btn">📋 Share</button>
-        </div>
-      </div>
+      <div class="sec-head"><span class="sec-title">Stats</span></div>
       <div class="sec-body">
         <div class="stats-grid">${cards}</div>
         <div class="reset-row">
@@ -891,6 +956,7 @@ function renderStats() {
 // ── Render: History ────────────────────────────────────────────────────────
 function renderHistory() {
   if (!state.history || state.history.length === 0) return '';
+
   const fmt = ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const pStr = p => p ? `${escHtml(p.name)}&thinsp;${sp(p.skill)}` : '?';
 
@@ -918,12 +984,14 @@ function renderHistory() {
       </div>`;
   }).join('');
 
+  const canUndo = !!state.lastUndo;
+
   return `
     <div class="section">
       <div class="sec-head">
         <span class="sec-title">History <b>(${state.history.length})</b></span>
         <div class="sec-head-btns">
-          ${state.lastUndo ? `<button class="btn btn-ghost btn-sm" id="undo-btn">↩ Undo</button>` : ''}
+          ${canUndo ? `<button class="btn btn-ghost btn-sm" id="undo-btn">↩ Undo last</button>` : ''}
           <button class="btn btn-ghost btn-sm" id="clear-history-btn">Clear</button>
         </div>
       </div>
@@ -935,6 +1003,7 @@ function renderHistory() {
 
 // ── Events ─────────────────────────────────────────────────────────────────
 function bindEvents() {
+  // Add player
   document.getElementById('add-form')?.addEventListener('submit', e => {
     e.preventDefault();
     addPlayer(document.getElementById('player-name').value, document.getElementById('player-skill').value);
@@ -942,29 +1011,44 @@ function bindEvents() {
     document.getElementById('player-name').focus();
   });
 
+  // Remove player
   document.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', () => removePlayer(+b.dataset.id)));
-  document.querySelectorAll('.toggle-absent-btn').forEach(b => b.addEventListener('click', () => toggleAbsent(+b.dataset.id)));
 
+  // Regulars
   document.getElementById('save-regulars-btn')?.addEventListener('click', saveRegulars);
   document.getElementById('load-regulars-btn')?.addEventListener('click', loadRegulars);
 
+  // Match type toggle
   document.getElementById('toggle-singles')?.addEventListener('click', () => { state.matchType = 'singles'; saveState(); render(); });
   document.getElementById('toggle-doubles')?.addEventListener('click', () => { state.matchType = 'doubles'; saveState(); render(); });
+
+  // Courts
   document.getElementById('courts-input')?.addEventListener('change', e => {
     state.courts = Math.max(1, Math.min(10, +e.target.value || 1)); saveState();
   });
 
+  // Generate / complete all
   document.getElementById('generate-btn')?.addEventListener('click', generateMatches);
   document.getElementById('complete-all-btn')?.addEventListener('click', completeAllMatches);
+
+  // Open score entry
   document.querySelectorAll('.open-score-btn').forEach(b => b.addEventListener('click', () => openScoreEntry(+b.dataset.id)));
+
+  // Submit score (winner buttons)
   document.querySelectorAll('.score-win-btn').forEach(b => b.addEventListener('click', () => {
     const matchId = +b.dataset.match;
-    completeMatchWithScore(matchId, b.dataset.winner, document.getElementById(`score-val-${matchId}`)?.value || '');
+    const winner  = b.dataset.winner;
+    const score   = document.getElementById(`score-val-${matchId}`)?.value || '';
+    completeMatchWithScore(matchId, winner, score);
   }));
+
+  // Cancel score entry
   document.querySelectorAll('.cancel-score-btn').forEach(b => b.addEventListener('click', cancelScoreEntry));
 
+  // Undo
   document.getElementById('undo-btn')?.addEventListener('click', undoLastComplete);
-  document.getElementById('share-btn')?.addEventListener('click', shareSession);
+
+  // Reset / clear
   document.getElementById('reset-stats-btn')?.addEventListener('click', resetStats);
   document.getElementById('reset-all-btn')?.addEventListener('click', resetAll);
   document.getElementById('clear-history-btn')?.addEventListener('click', () => {
@@ -978,7 +1062,10 @@ function bindEvents() {
 function applyTheme(light) {
   document.documentElement.classList.toggle('light', light);
   const btn = document.getElementById('theme-btn');
-  if (btn) { btn.textContent = light ? '🌙' : '☀️'; btn.title = light ? 'Switch to dark mode' : 'Switch to light mode'; }
+  if (btn) {
+    btn.textContent = light ? '🌙' : '☀️';
+    btn.title = light ? 'Switch to dark mode' : 'Switch to light mode';
+  }
 }
 
 function initTheme() {

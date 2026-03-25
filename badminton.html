@@ -886,65 +886,83 @@
 
   function buildMatches(players, count, format) {
     const matches = [];
-    const usedKeys = new Set();
-    const maxAttempts = count * 20;
-    let attempts = 0;
+    const ppm = format === 'doubles' ? 4 : 2;
+    if (players.length < ppm) return matches;
 
-    while (matches.length < count && attempts < maxAttempts) {
-      attempts++;
-      const shuffled = shuffle([...players]);
+    const skillVal = { beg: 1, int: 2, adv: 3 };
+    const playCount = {};      // id → times scheduled
+    const partnerCount = {};   // "id,id" → times partnered (doubles)
+    const oppCount = {};       // "id,id" → times faced each other
+
+    players.forEach(p => { playCount[p.id] = 0; });
+
+    const trials = players.length <= 8 ? 80 : 40;
+
+    for (let i = 0; i < count; i++) {
+      let bestTeam1 = null, bestTeam2 = null, bestScore = Infinity;
+
+      for (let t = 0; t < trials; t++) {
+        const s = shuffle([...players]);
+        const team1 = s.slice(0, ppm / 2);
+        const team2 = s.slice(ppm / 2, ppm);
+        const score = scoreCandidate(team1, team2, playCount, partnerCount, oppCount, format, skillVal);
+        if (score < bestScore) { bestScore = score; bestTeam1 = team1; bestTeam2 = team2; }
+      }
+
+      matches.push({ id: i + 1, team1: bestTeam1, team2: bestTeam2, status: 'pending', winner: null });
+
+      [...bestTeam1, ...bestTeam2].forEach(p => { playCount[p.id]++; });
 
       if (format === 'doubles') {
-        if (shuffled.length < 4) break;
-        const team1 = [shuffled[0], shuffled[1]];
-        const team2 = [shuffled[2], shuffled[3]];
-        const key = makeKey(team1, team2);
-        if (!usedKeys.has(key) || uniquePairingsExhausted(players.length, usedKeys.size, 'doubles')) {
-          usedKeys.add(key);
-          matches.push({ id: matches.length + 1, team1, team2, status: 'pending', winner: null });
-        }
-      } else {
-        if (shuffled.length < 2) break;
-        const team1 = [shuffled[0]];
-        const team2 = [shuffled[1]];
-        const key = makeKey(team1, team2);
-        if (!usedKeys.has(key) || uniquePairingsExhausted(players.length, usedKeys.size, 'singles')) {
-          usedKeys.add(key);
-          matches.push({ id: matches.length + 1, team1, team2, status: 'pending', winner: null });
+        const pk1 = [bestTeam1[0].id, bestTeam1[1].id].sort().join(',');
+        const pk2 = [bestTeam2[0].id, bestTeam2[1].id].sort().join(',');
+        partnerCount[pk1] = (partnerCount[pk1] || 0) + 1;
+        partnerCount[pk2] = (partnerCount[pk2] || 0) + 1;
+      }
+      for (const p1 of bestTeam1) {
+        for (const p2 of bestTeam2) {
+          const ok = [p1.id, p2.id].sort().join(',');
+          oppCount[ok] = (oppCount[ok] || 0) + 1;
         }
       }
-    }
-
-    // If still short (too few unique combos), fill with random repeats
-    while (matches.length < count) {
-      const shuffled = shuffle([...players]);
-      if (format === 'doubles' && shuffled.length >= 4) {
-        matches.push({ id: matches.length + 1, team1: [shuffled[0], shuffled[1]], team2: [shuffled[2], shuffled[3]], status: 'pending', winner: null });
-      } else if (format === 'singles' && shuffled.length >= 2) {
-        matches.push({ id: matches.length + 1, team1: [shuffled[0]], team2: [shuffled[1]], status: 'pending', winner: null });
-      } else break;
     }
 
     return matches;
   }
 
-  function uniquePairingsExhausted(n, used, format) {
-    // rough max unique matchups
-    const max = format === 'doubles' ? combinations(n, 4) * 3 : combinations(n, 2);
-    return used >= max * 0.9;
-  }
+  function scoreCandidate(team1, team2, playCount, partnerCount, oppCount, format, skillVal) {
+    let score = 0;
+    const all = [...team1, ...team2];
 
-  function combinations(n, k) {
-    if (k > n) return 0;
-    let result = 1;
-    for (let i = 0; i < k; i++) result = result * (n - i) / (i + 1);
-    return Math.floor(result);
-  }
+    // 1. Play-count balance — prefer players who have played fewer times
+    const globalMin = Math.min(...Object.values(playCount));
+    all.forEach(p => { score += (playCount[p.id] - globalMin) * 4; });
 
-  function makeKey(team1, team2) {
-    const t1 = team1.map(p => p.id).sort().join(',');
-    const t2 = team2.map(p => p.id).sort().join(',');
-    return [t1, t2].sort().join('|');
+    if (format === 'doubles') {
+      // 2. Skill balance — minimise skill-total difference between teams
+      const s1 = team1.reduce((s, p) => s + skillVal[p.level], 0);
+      const s2 = team2.reduce((s, p) => s + skillVal[p.level], 0);
+      score += Math.abs(s1 - s2) * 3;
+
+      // 3. Partner variety — penalise repeating same partnership
+      const pk1 = [team1[0].id, team1[1].id].sort().join(',');
+      const pk2 = [team2[0].id, team2[1].id].sort().join(',');
+      score += (partnerCount[pk1] || 0) * 6;
+      score += (partnerCount[pk2] || 0) * 6;
+    } else {
+      // 2. Singles skill parity — prefer similar-level opponents
+      score += Math.abs(skillVal[team1[0].level] - skillVal[team2[0].level]) * 2;
+    }
+
+    // 4. Opponent variety — penalise facing same people repeatedly
+    for (const p1 of team1) {
+      for (const p2 of team2) {
+        const ok = [p1.id, p2.id].sort().join(',');
+        score += (oppCount[ok] || 0) * 2;
+      }
+    }
+
+    return score;
   }
 
   function shuffle(arr) {

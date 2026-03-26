@@ -6,6 +6,7 @@
   <title>PDF Tools</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     :root {
       --sidebar-bg: #0f172a;
@@ -500,6 +501,202 @@
       line-height: 1.5;
     }
 
+    /* ── Multi-file list ── */
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .file-list-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      cursor: grab;
+      user-select: none;
+    }
+
+    .file-list-item:active { cursor: grabbing; }
+    .file-list-item.dragging { opacity: 0.4; }
+    .file-list-item.drag-over { border-color: var(--accent); background: rgba(99,102,241,0.04); }
+
+    .file-list-handle {
+      color: #cbd5e1;
+      flex-shrink: 0;
+    }
+
+    .file-list-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .file-list-info { flex: 1; min-width: 0; }
+
+    .file-list-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-list-size { font-size: 11.5px; color: var(--text-muted); }
+
+    .file-list-remove {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 5px;
+      display: flex;
+      transition: color 0.15s;
+    }
+
+    .file-list-remove:hover { color: #ef4444; }
+
+    .add-more-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px;
+      background: none;
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      margin-bottom: 20px;
+    }
+
+    .add-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Option row ── */
+    .option-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      color: var(--text);
+    }
+
+    .option-btn:hover { border-color: #a5b4fc; }
+    .option-btn.selected { border-color: var(--accent); background: rgba(99,102,241,0.06); color: var(--accent); }
+
+    /* ── Text input ── */
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .input-row label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .input-row input[type="text"],
+    .input-row textarea {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--card);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-row input[type="text"]:focus,
+    .input-row textarea:focus { border-color: var(--accent); }
+
+    .input-hint { font-size: 11.5px; color: #94a3b8; }
+
+    /* ── Rotate grid ── */
+    .rotate-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .rotate-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      cursor: pointer;
+      background: var(--card);
+      text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .rotate-card:hover { border-color: #a5b4fc; }
+    .rotate-card.selected { border-color: var(--accent); background: rgba(99,102,241,0.05); }
+
+    .rotate-icon {
+      font-size: 24px;
+      margin-bottom: 7px;
+      line-height: 1;
+    }
+
+    .rotate-name { font-size: 13px; font-weight: 700; }
+    .rotate-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Format toggle ── */
+    .format-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .format-btn {
+      padding: 8px 20px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      color: var(--text);
+    }
+
+    .format-btn.selected { border-color: var(--accent); background: rgba(99,102,241,0.07); color: var(--accent); }
+
     /* ── Utilities ── */
     .hidden { display: none !important; }
 
@@ -540,14 +737,13 @@
 
   <div class="sidebar-group">
     <div class="sidebar-group-label">Manage</div>
-    <div class="sidebar-item disabled">
+    <div class="sidebar-item" data-tool="merge-pdf">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M8 6H21M8 12H21M8 18H21M3 6h.01M3 12h.01M3 18h.01"/>
       </svg>
       Merge PDF
-      <span class="soon-badge">Soon</span>
     </div>
-    <div class="sidebar-item disabled">
+    <div class="sidebar-item" data-tool="split-pdf">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -555,9 +751,8 @@
         <line x1="9" y1="15" x2="15" y2="15"/>
       </svg>
       Split PDF
-      <span class="soon-badge">Soon</span>
     </div>
-    <div class="sidebar-item disabled">
+    <div class="sidebar-item" data-tool="rotate-pdf">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="17 1 21 5 17 9"/>
         <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
@@ -565,28 +760,25 @@
         <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
       </svg>
       Rotate PDF
-      <span class="soon-badge">Soon</span>
     </div>
   </div>
 
   <div class="sidebar-group">
     <div class="sidebar-group-label">Convert</div>
-    <div class="sidebar-item disabled">
+    <div class="sidebar-item" data-tool="pdf-to-image">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-        <line x1="8" y1="12" x2="16" y2="12"/>
-        <line x1="12" y1="8" x2="12" y2="16"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
       </svg>
       PDF to Image
-      <span class="soon-badge">Soon</span>
     </div>
-    <div class="sidebar-item disabled">
+    <div class="sidebar-item" data-tool="image-to-pdf">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
       Image to PDF
-      <span class="soon-badge">Soon</span>
     </div>
   </div>
 </aside>
@@ -751,6 +943,267 @@
       </button>
 
       <div id="img-result" class="hidden"></div>
+    </div>
+  </div>
+
+
+  <!-- ── Merge PDF ── -->
+  <div class="tool-panel" id="merge-pdf">
+    <div class="tool-header">
+      <h2>Merge PDF</h2>
+      <p>Combine multiple PDF files into one — drag to reorder, then merge.</p>
+    </div>
+
+    <div class="upload-zone" id="merge-zone">
+      <input type="file" id="merge-input" accept=".pdf" multiple>
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop PDFs here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">Select multiple files · Processed locally</p>
+    </div>
+
+    <div id="merge-settings" class="hidden">
+      <div class="file-list" id="merge-list"></div>
+      <input type="file" id="merge-add-input" accept=".pdf" multiple style="display:none">
+      <button class="add-more-btn" id="merge-add-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add more PDFs
+      </button>
+      <button class="btn-primary" id="merge-btn" onclick="runMerge()">Merge PDFs</button>
+      <div id="merge-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="merge-bar"></div></div>
+        <div class="progress-label" id="merge-progress-label">Merging…</div>
+      </div>
+      <div id="merge-result" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ── Split PDF ── -->
+  <div class="tool-panel" id="split-pdf">
+    <div class="tool-header">
+      <h2>Split PDF</h2>
+      <p>Extract pages from a PDF — split every page, or specify a custom range.</p>
+    </div>
+
+    <div class="upload-zone" id="split-zone">
+      <input type="file" id="split-input" accept=".pdf">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop your PDF here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">Supports .pdf · Processed locally</p>
+    </div>
+
+    <div id="split-settings" class="hidden">
+      <div class="file-bar">
+        <div class="file-bar-icon pdf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="file-bar-info">
+          <div class="file-bar-name" id="split-file-name"></div>
+          <div class="file-bar-size" id="split-file-size"></div>
+        </div>
+        <button class="file-bar-remove" id="split-remove" title="Remove file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="section-label">Split Mode</div>
+      <div class="option-row" id="split-mode-row">
+        <button class="option-btn selected" data-mode="all" onclick="setSplitMode('all')">Extract all pages</button>
+        <button class="option-btn" data-mode="range" onclick="setSplitMode('range')">Custom range</button>
+      </div>
+
+      <div id="split-range-input" class="input-row hidden">
+        <label>Page Range</label>
+        <input type="text" id="split-range" placeholder="e.g. 1-3, 5, 7-9">
+        <span class="input-hint">Separate ranges with commas. Pages are 1-indexed.</span>
+      </div>
+
+      <button class="btn-primary" id="split-btn" onclick="runSplit()">Split PDF</button>
+      <div id="split-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="split-bar"></div></div>
+        <div class="progress-label" id="split-progress-label">Splitting…</div>
+      </div>
+      <div id="split-result" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ── Rotate PDF ── -->
+  <div class="tool-panel" id="rotate-pdf">
+    <div class="tool-header">
+      <h2>Rotate PDF</h2>
+      <p>Rotate all pages or specific pages of a PDF to the correct orientation.</p>
+    </div>
+
+    <div class="upload-zone" id="rotate-zone">
+      <input type="file" id="rotate-input" accept=".pdf">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop your PDF here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">Supports .pdf · Processed locally</p>
+    </div>
+
+    <div id="rotate-settings" class="hidden">
+      <div class="file-bar">
+        <div class="file-bar-icon pdf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="file-bar-info">
+          <div class="file-bar-name" id="rotate-file-name"></div>
+          <div class="file-bar-size" id="rotate-file-size"></div>
+        </div>
+        <button class="file-bar-remove" id="rotate-remove" title="Remove file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="section-label">Rotation</div>
+      <div class="rotate-grid" id="rotate-angle-grid">
+        <div class="rotate-card selected" data-angle="90" onclick="setRotateAngle(90)">
+          <div class="rotate-icon">↻</div>
+          <div class="rotate-name">90° CW</div>
+          <div class="rotate-desc">Clockwise</div>
+        </div>
+        <div class="rotate-card" data-angle="180" onclick="setRotateAngle(180)">
+          <div class="rotate-icon">↕</div>
+          <div class="rotate-name">180°</div>
+          <div class="rotate-desc">Upside down</div>
+        </div>
+        <div class="rotate-card" data-angle="270" onclick="setRotateAngle(270)">
+          <div class="rotate-icon">↺</div>
+          <div class="rotate-name">90° CCW</div>
+          <div class="rotate-desc">Counter-clockwise</div>
+        </div>
+      </div>
+
+      <div class="section-label">Pages to Rotate</div>
+      <div class="option-row" id="rotate-pages-row">
+        <button class="option-btn selected" data-pages="all" onclick="setRotatePages('all')">All pages</button>
+        <button class="option-btn" data-pages="custom" onclick="setRotatePages('custom')">Specific pages</button>
+      </div>
+
+      <div id="rotate-pages-input" class="input-row hidden">
+        <label>Page Numbers</label>
+        <input type="text" id="rotate-pages-range" placeholder="e.g. 1, 3, 5-8">
+        <span class="input-hint">Separate pages/ranges with commas. Pages are 1-indexed.</span>
+      </div>
+
+      <button class="btn-primary" id="rotate-btn" onclick="runRotate()">Rotate PDF</button>
+      <div id="rotate-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="rotate-bar"></div></div>
+        <div class="progress-label" id="rotate-progress-label">Rotating…</div>
+      </div>
+      <div id="rotate-result" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ── PDF to Image ── -->
+  <div class="tool-panel" id="pdf-to-image">
+    <div class="tool-header">
+      <h2>PDF to Image</h2>
+      <p>Convert every page of a PDF into images — downloads as a ZIP file.</p>
+    </div>
+
+    <div class="upload-zone" id="pti-zone">
+      <input type="file" id="pti-input" accept=".pdf">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop your PDF here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">Supports .pdf · Processed locally</p>
+    </div>
+
+    <div id="pti-settings" class="hidden">
+      <div class="file-bar">
+        <div class="file-bar-icon pdf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <div class="file-bar-info">
+          <div class="file-bar-name" id="pti-file-name"></div>
+          <div class="file-bar-size" id="pti-file-size"></div>
+        </div>
+        <button class="file-bar-remove" id="pti-remove" title="Remove file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="section-label">Output Format</div>
+      <div class="format-row">
+        <button class="format-btn selected" data-fmt="jpeg" onclick="setPtiFormat('jpeg')">JPEG</button>
+        <button class="format-btn" data-fmt="png" onclick="setPtiFormat('png')">PNG</button>
+      </div>
+
+      <div class="section-label">Resolution</div>
+      <div class="option-row">
+        <button class="option-btn selected" data-res="1.5" onclick="setPtiRes(this)">Normal (150 dpi)</button>
+        <button class="option-btn" data-res="2" onclick="setPtiRes(this)">High (200 dpi)</button>
+        <button class="option-btn" data-res="3" onclick="setPtiRes(this)">Very High (300 dpi)</button>
+      </div>
+
+      <button class="btn-primary" id="pti-btn" onclick="runPdfToImage()">Convert to Images</button>
+      <div id="pti-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="pti-bar"></div></div>
+        <div class="progress-label" id="pti-progress-label">Converting…</div>
+      </div>
+      <div id="pti-result" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- ── Image to PDF ── -->
+  <div class="tool-panel" id="image-to-pdf">
+    <div class="tool-header">
+      <h2>Image to PDF</h2>
+      <p>Combine one or more images into a single PDF — drag to reorder.</p>
+    </div>
+
+    <div class="upload-zone" id="itp-zone">
+      <input type="file" id="itp-input" accept="image/jpeg,image/png,image/webp" multiple>
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop images here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">JPEG · PNG · WebP · Multiple files supported</p>
+    </div>
+
+    <div id="itp-settings" class="hidden">
+      <div class="file-list" id="itp-list"></div>
+      <input type="file" id="itp-add-input" accept="image/jpeg,image/png,image/webp" multiple style="display:none">
+      <button class="add-more-btn" id="itp-add-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add more images
+      </button>
+
+      <div class="section-label">Page Size</div>
+      <div class="option-row">
+        <button class="option-btn selected" data-pagesize="fit" onclick="setItpPageSize(this)">Fit to image</button>
+        <button class="option-btn" data-pagesize="a4" onclick="setItpPageSize(this)">A4</button>
+        <button class="option-btn" data-pagesize="letter" onclick="setItpPageSize(this)">US Letter</button>
+      </div>
+
+      <button class="btn-primary" id="itp-btn" onclick="runImageToPdf()">Convert to PDF</button>
+      <div id="itp-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="itp-bar"></div></div>
+        <div class="progress-label" id="itp-progress-label">Building PDF…</div>
+      </div>
+      <div id="itp-result" class="hidden"></div>
     </div>
   </div>
 
@@ -1061,6 +1514,662 @@ async function runImgCompress() {
   } finally {
     btn.disabled = false;
   }
+}
+
+// ════════════════════════════════════════
+// MERGE PDF
+// ════════════════════════════════════════
+let mergeFiles = [];
+
+const mergeInput    = document.getElementById('merge-input');
+const mergeZone     = document.getElementById('merge-zone');
+const mergeAddInput = document.getElementById('merge-add-input');
+
+mergeInput.addEventListener('change', e => addMergeFiles(Array.from(e.target.files)));
+mergeZone.addEventListener('dragover', e => { e.preventDefault(); mergeZone.classList.add('dragover'); });
+mergeZone.addEventListener('dragleave', () => mergeZone.classList.remove('dragover'));
+mergeZone.addEventListener('drop', e => {
+  e.preventDefault(); mergeZone.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+  if (files.length) addMergeFiles(files);
+});
+document.getElementById('merge-add-btn').addEventListener('click', () => mergeAddInput.click());
+mergeAddInput.addEventListener('change', e => addMergeFiles(Array.from(e.target.files)));
+
+function addMergeFiles(files) {
+  mergeFiles.push(...files);
+  mergeZone.classList.add('hidden');
+  document.getElementById('merge-settings').classList.remove('hidden');
+  renderMergeList();
+}
+
+function renderMergeList() {
+  const list = document.getElementById('merge-list');
+  list.innerHTML = mergeFiles.map((f, i) => `
+    <div class="file-list-item" draggable="true" data-idx="${i}">
+      <span class="file-list-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      </span>
+      <span class="file-list-num">${i + 1}</span>
+      <div class="file-list-info">
+        <div class="file-list-name">${f.name}</div>
+        <div class="file-list-size">${fmt(f.size)}</div>
+      </div>
+      <button class="file-list-remove" onclick="removeMergeFile(${i})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+  setupDragSort(list, mergeFiles, renderMergeList);
+}
+
+function removeMergeFile(i) {
+  mergeFiles.splice(i, 1);
+  if (!mergeFiles.length) {
+    mergeZone.classList.remove('hidden');
+    document.getElementById('merge-settings').classList.add('hidden');
+    mergeInput.value = '';
+  } else {
+    renderMergeList();
+  }
+}
+
+async function runMerge() {
+  if (mergeFiles.length < 2) { alert('Add at least 2 PDFs to merge.'); return; }
+  const btn = document.getElementById('merge-btn');
+  const bar = document.getElementById('merge-bar');
+  const label = document.getElementById('merge-progress-label');
+  const progress = document.getElementById('merge-progress');
+  const result = document.getElementById('merge-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '0%';
+
+  try {
+    const merged = await PDFLib.PDFDocument.create();
+    for (let i = 0; i < mergeFiles.length; i++) {
+      label.textContent = `Processing file ${i + 1} of ${mergeFiles.length}…`;
+      const bytes = await mergeFiles[i].arrayBuffer();
+      const src = await PDFLib.PDFDocument.load(bytes);
+      const pages = await merged.copyPages(src, src.getPageIndices());
+      pages.forEach(p => merged.addPage(p));
+      bar.style.width = Math.round(((i + 1) / mergeFiles.length) * 90) + '%';
+    }
+    label.textContent = 'Saving…';
+    const outBytes = await merged.save();
+    bar.style.width = '100%';
+    const totalIn = mergeFiles.reduce((s, f) => s + f.size, 0);
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadMerged', 'Download Merged PDF');
+    result.dataset.bytes = JSON.stringify(Array.from(outBytes));
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err); alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; progress.classList.add('hidden');
+  }
+}
+
+function downloadMerged() {
+  const result = document.getElementById('merge-result');
+  const bytes = new Uint8Array(JSON.parse(result.dataset.bytes));
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'merged.pdf';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════
+// SPLIT PDF
+// ════════════════════════════════════════
+let splitFile = null, splitMode = 'all';
+
+const splitInput = document.getElementById('split-input');
+const splitZone  = document.getElementById('split-zone');
+
+splitInput.addEventListener('change', e => handleSplit(e.target.files[0]));
+splitZone.addEventListener('dragover', e => { e.preventDefault(); splitZone.classList.add('dragover'); });
+splitZone.addEventListener('dragleave', () => splitZone.classList.remove('dragover'));
+splitZone.addEventListener('drop', e => {
+  e.preventDefault(); splitZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') handleSplit(f);
+});
+document.getElementById('split-remove').addEventListener('click', () => {
+  splitFile = null; splitInput.value = '';
+  splitZone.classList.remove('hidden');
+  document.getElementById('split-settings').classList.add('hidden');
+});
+
+function handleSplit(file) {
+  if (!file) return;
+  splitFile = file;
+  document.getElementById('split-file-name').textContent = file.name;
+  document.getElementById('split-file-size').textContent = fmt(file.size);
+  splitZone.classList.add('hidden');
+  document.getElementById('split-settings').classList.remove('hidden');
+  document.getElementById('split-result').classList.add('hidden');
+}
+
+function setSplitMode(mode) {
+  splitMode = mode;
+  document.querySelectorAll('#split-mode-row .option-btn').forEach(b => b.classList.toggle('selected', b.dataset.mode === mode));
+  document.getElementById('split-range-input').classList.toggle('hidden', mode !== 'range');
+}
+
+function parsePageRanges(str, total) {
+  const pages = new Set();
+  str.split(',').forEach(part => {
+    part = part.trim();
+    const m = part.match(/^(\d+)-(\d+)$/);
+    if (m) {
+      for (let i = +m[1]; i <= +m[2]; i++) if (i >= 1 && i <= total) pages.add(i - 1);
+    } else if (/^\d+$/.test(part)) {
+      const p = +part;
+      if (p >= 1 && p <= total) pages.add(p - 1);
+    }
+  });
+  return [...pages].sort((a, b) => a - b);
+}
+
+async function runSplit() {
+  if (!splitFile) return;
+  const btn = document.getElementById('split-btn');
+  const bar = document.getElementById('split-bar');
+  const label = document.getElementById('split-progress-label');
+  const progress = document.getElementById('split-progress');
+  const result = document.getElementById('split-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '5%';
+  label.textContent = 'Loading PDF…';
+
+  try {
+    const bytes = await splitFile.arrayBuffer();
+    const src = await PDFLib.PDFDocument.load(bytes);
+    const total = src.getPageCount();
+
+    let pageIndices;
+    if (splitMode === 'all') {
+      pageIndices = Array.from({ length: total }, (_, i) => i);
+    } else {
+      const rangeStr = document.getElementById('split-range').value;
+      pageIndices = parsePageRanges(rangeStr, total);
+      if (!pageIndices.length) { alert('No valid pages in range.'); btn.disabled = false; progress.classList.add('hidden'); return; }
+    }
+
+    label.textContent = `Extracting ${pageIndices.length} page(s)…`;
+    bar.style.width = '20%';
+
+    const zip = new JSZip();
+    const baseName = splitFile.name.replace(/\.pdf$/i, '');
+
+    for (let i = 0; i < pageIndices.length; i++) {
+      const newPdf = await PDFLib.PDFDocument.create();
+      const [page] = await newPdf.copyPages(src, [pageIndices[i]]);
+      newPdf.addPage(page);
+      const outBytes = await newPdf.save();
+      const pageNum = String(pageIndices[i] + 1).padStart(3, '0');
+      zip.file(`${baseName}_page${pageNum}.pdf`, outBytes);
+      bar.style.width = Math.round(20 + ((i + 1) / pageIndices.length) * 75) + '%';
+      label.textContent = `Extracting page ${i + 1} of ${pageIndices.length}…`;
+    }
+
+    label.textContent = 'Creating ZIP…';
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    bar.style.width = '100%';
+
+    result.innerHTML = `<div class="results-card">
+      <div class="results-head"><h3>Split Complete</h3><span class="badge-ok">Done</span></div>
+      <div class="savings-note" style="margin-bottom:18px">
+        Extracted <strong>${pageIndices.length} page${pageIndices.length > 1 ? 's' : ''}</strong> from ${total}-page PDF
+      </div>
+      <button class="btn-download" onclick="downloadSplit()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download ZIP (${pageIndices.length} PDF${pageIndices.length > 1 ? 's' : ''})
+      </button>
+    </div>`;
+    result._zipBlob = zipBlob;
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err); alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; progress.classList.add('hidden');
+  }
+}
+
+function downloadSplit() {
+  const result = document.getElementById('split-result');
+  if (!result._zipBlob) return;
+  const baseName = splitFile.name.replace(/\.pdf$/i, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(result._zipBlob);
+  a.download = `${baseName}_split.zip`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════
+// ROTATE PDF
+// ════════════════════════════════════════
+let rotateFile = null, rotateAngle = 90, rotatePages = 'all';
+
+const rotateInput = document.getElementById('rotate-input');
+const rotateZone  = document.getElementById('rotate-zone');
+
+rotateInput.addEventListener('change', e => handleRotate(e.target.files[0]));
+rotateZone.addEventListener('dragover', e => { e.preventDefault(); rotateZone.classList.add('dragover'); });
+rotateZone.addEventListener('dragleave', () => rotateZone.classList.remove('dragover'));
+rotateZone.addEventListener('drop', e => {
+  e.preventDefault(); rotateZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') handleRotate(f);
+});
+document.getElementById('rotate-remove').addEventListener('click', () => {
+  rotateFile = null; rotateInput.value = '';
+  rotateZone.classList.remove('hidden');
+  document.getElementById('rotate-settings').classList.add('hidden');
+});
+
+function handleRotate(file) {
+  if (!file) return;
+  rotateFile = file;
+  document.getElementById('rotate-file-name').textContent = file.name;
+  document.getElementById('rotate-file-size').textContent = fmt(file.size);
+  rotateZone.classList.add('hidden');
+  document.getElementById('rotate-settings').classList.remove('hidden');
+  document.getElementById('rotate-result').classList.add('hidden');
+}
+
+function setRotateAngle(deg) {
+  rotateAngle = deg;
+  document.querySelectorAll('#rotate-angle-grid .rotate-card').forEach(c => c.classList.toggle('selected', +c.dataset.angle === deg));
+}
+
+function setRotatePages(mode) {
+  rotatePages = mode;
+  document.querySelectorAll('#rotate-pages-row .option-btn').forEach(b => b.classList.toggle('selected', b.dataset.pages === mode));
+  document.getElementById('rotate-pages-input').classList.toggle('hidden', mode !== 'custom');
+}
+
+async function runRotate() {
+  if (!rotateFile) return;
+  const btn = document.getElementById('rotate-btn');
+  const bar = document.getElementById('rotate-bar');
+  const label = document.getElementById('rotate-progress-label');
+  const progress = document.getElementById('rotate-progress');
+  const result = document.getElementById('rotate-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '10%';
+  label.textContent = 'Loading PDF…';
+
+  try {
+    const bytes = await rotateFile.arrayBuffer();
+    const pdf = await PDFLib.PDFDocument.load(bytes);
+    const total = pdf.getPageCount();
+
+    let targets;
+    if (rotatePages === 'all') {
+      targets = Array.from({ length: total }, (_, i) => i);
+    } else {
+      const rangeStr = document.getElementById('rotate-pages-range').value;
+      targets = parsePageRanges(rangeStr, total);
+      if (!targets.length) { alert('No valid pages specified.'); btn.disabled = false; progress.classList.add('hidden'); return; }
+    }
+
+    targets.forEach(i => {
+      const page = pdf.getPage(i);
+      const current = page.getRotation().angle;
+      page.setRotation(PDFLib.degrees((current + rotateAngle) % 360));
+    });
+
+    bar.style.width = '80%';
+    label.textContent = 'Saving…';
+    const outBytes = await pdf.save();
+    bar.style.width = '100%';
+
+    result.innerHTML = resultHTML(rotateFile.size, outBytes.byteLength, 'downloadRotated', 'Download Rotated PDF');
+    result.dataset.bytes = JSON.stringify(Array.from(outBytes));
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err); alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; progress.classList.add('hidden');
+  }
+}
+
+function downloadRotated() {
+  const result = document.getElementById('rotate-result');
+  const bytes = new Uint8Array(JSON.parse(result.dataset.bytes));
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = rotateFile.name.replace(/\.pdf$/i, '_rotated.pdf');
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════
+// PDF TO IMAGE
+// ════════════════════════════════════════
+let ptiFile = null, ptiFormat = 'jpeg', ptiScale = 1.5;
+
+const ptiInput = document.getElementById('pti-input');
+const ptiZone  = document.getElementById('pti-zone');
+
+ptiInput.addEventListener('change', e => handlePti(e.target.files[0]));
+ptiZone.addEventListener('dragover', e => { e.preventDefault(); ptiZone.classList.add('dragover'); });
+ptiZone.addEventListener('dragleave', () => ptiZone.classList.remove('dragover'));
+ptiZone.addEventListener('drop', e => {
+  e.preventDefault(); ptiZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type === 'application/pdf') handlePti(f);
+});
+document.getElementById('pti-remove').addEventListener('click', () => {
+  ptiFile = null; ptiInput.value = '';
+  ptiZone.classList.remove('hidden');
+  document.getElementById('pti-settings').classList.add('hidden');
+});
+
+function handlePti(file) {
+  if (!file) return;
+  ptiFile = file;
+  document.getElementById('pti-file-name').textContent = file.name;
+  document.getElementById('pti-file-size').textContent = fmt(file.size);
+  ptiZone.classList.add('hidden');
+  document.getElementById('pti-settings').classList.remove('hidden');
+  document.getElementById('pti-result').classList.add('hidden');
+}
+
+function setPtiFormat(fmt_) {
+  ptiFormat = fmt_;
+  document.querySelectorAll('#pti-settings .format-btn').forEach(b => b.classList.toggle('selected', b.dataset.fmt === fmt_));
+}
+
+function setPtiRes(btn) {
+  ptiScale = +btn.dataset.res;
+  document.querySelectorAll('#pti-settings .option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function runPdfToImage() {
+  if (!ptiFile) return;
+  const btn = document.getElementById('pti-btn');
+  const bar = document.getElementById('pti-bar');
+  const label = document.getElementById('pti-progress-label');
+  const progress = document.getElementById('pti-progress');
+  const result = document.getElementById('pti-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '5%';
+  label.textContent = 'Loading PDF…';
+
+  try {
+    const arrayBuffer = await ptiFile.arrayBuffer();
+    const srcPdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const total = srcPdf.numPages;
+    const zip = new JSZip();
+    const mimeType = ptiFormat === 'png' ? 'image/png' : 'image/jpeg';
+    const ext = ptiFormat;
+    const baseName = ptiFile.name.replace(/\.pdf$/i, '');
+    const quality = ptiFormat === 'jpeg' ? 0.92 : undefined;
+
+    for (let i = 1; i <= total; i++) {
+      label.textContent = `Converting page ${i} of ${total}…`;
+      const page = await srcPdf.getPage(i);
+      const viewport = page.getViewport({ scale: ptiScale });
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+      const dataUrl = canvas.toDataURL(mimeType, quality);
+      const b64 = dataUrl.split(',')[1];
+      const pageNum = String(i).padStart(3, '0');
+      zip.file(`${baseName}_page${pageNum}.${ext}`, b64, { base64: true });
+      bar.style.width = Math.round(5 + (i / total) * 88) + '%';
+    }
+
+    label.textContent = 'Creating ZIP…';
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    bar.style.width = '100%';
+
+    result.innerHTML = `<div class="results-card">
+      <div class="results-head"><h3>Conversion Complete</h3><span class="badge-ok">Done</span></div>
+      <div class="savings-note" style="margin-bottom:18px">
+        Converted <strong>${total} page${total > 1 ? 's' : ''}</strong> to ${ext.toUpperCase()} images
+      </div>
+      <button class="btn-download" onclick="downloadPtiZip()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download ZIP (${total} ${ext.toUpperCase()}${total > 1 ? 's' : ''})
+      </button>
+    </div>`;
+    result._zipBlob = zipBlob;
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err); alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; progress.classList.add('hidden');
+  }
+}
+
+function downloadPtiZip() {
+  const result = document.getElementById('pti-result');
+  if (!result._zipBlob) return;
+  const baseName = ptiFile.name.replace(/\.pdf$/i, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(result._zipBlob);
+  a.download = `${baseName}_images.zip`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════
+// IMAGE TO PDF
+// ════════════════════════════════════════
+let itpFiles = [], itpPageSize = 'fit';
+
+const itpInput    = document.getElementById('itp-input');
+const itpZone     = document.getElementById('itp-zone');
+const itpAddInput = document.getElementById('itp-add-input');
+
+itpInput.addEventListener('change', e => addItpFiles(Array.from(e.target.files)));
+itpZone.addEventListener('dragover', e => { e.preventDefault(); itpZone.classList.add('dragover'); });
+itpZone.addEventListener('dragleave', () => itpZone.classList.remove('dragover'));
+itpZone.addEventListener('drop', e => {
+  e.preventDefault(); itpZone.classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  if (files.length) addItpFiles(files);
+});
+document.getElementById('itp-add-btn').addEventListener('click', () => itpAddInput.click());
+itpAddInput.addEventListener('change', e => addItpFiles(Array.from(e.target.files)));
+
+function addItpFiles(files) {
+  itpFiles.push(...files);
+  itpZone.classList.add('hidden');
+  document.getElementById('itp-settings').classList.remove('hidden');
+  renderItpList();
+}
+
+function renderItpList() {
+  const list = document.getElementById('itp-list');
+  list.innerHTML = itpFiles.map((f, i) => `
+    <div class="file-list-item" draggable="true" data-idx="${i}">
+      <span class="file-list-handle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+      </span>
+      <span class="file-list-num">${i + 1}</span>
+      <div class="file-list-info">
+        <div class="file-list-name">${f.name}</div>
+        <div class="file-list-size">${fmt(f.size)}</div>
+      </div>
+      <button class="file-list-remove" onclick="removeItpFile(${i})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+  setupDragSort(list, itpFiles, renderItpList);
+}
+
+function removeItpFile(i) {
+  itpFiles.splice(i, 1);
+  if (!itpFiles.length) {
+    itpZone.classList.remove('hidden');
+    document.getElementById('itp-settings').classList.add('hidden');
+    itpInput.value = '';
+  } else {
+    renderItpList();
+  }
+}
+
+function setItpPageSize(btn) {
+  itpPageSize = btn.dataset.pagesize;
+  document.querySelectorAll('#itp-settings .option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+async function runImageToPdf() {
+  if (!itpFiles.length) return;
+  const btn = document.getElementById('itp-btn');
+  const bar = document.getElementById('itp-bar');
+  const label = document.getElementById('itp-progress-label');
+  const progress = document.getElementById('itp-progress');
+  const result = document.getElementById('itp-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '5%';
+
+  // Page size constants in points (72pt = 1 inch)
+  const PAGE_SIZES = {
+    a4:     [595.28, 841.89],
+    letter: [612,    792],
+  };
+
+  try {
+    const pdf = await PDFLib.PDFDocument.create();
+
+    for (let i = 0; i < itpFiles.length; i++) {
+      label.textContent = `Processing image ${i + 1} of ${itpFiles.length}…`;
+      const file = itpFiles[i];
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+
+      let img;
+      if (file.type === 'image/png') {
+        img = await pdf.embedPng(bytes);
+      } else {
+        // JPEG or WebP — convert WebP to JPEG via canvas
+        if (file.type === 'image/webp') {
+          const blob = await new Promise(res => {
+            const image = new Image();
+            image.onload = () => {
+              const c = document.createElement('canvas');
+              c.width = image.width; c.height = image.height;
+              c.getContext('2d').drawImage(image, 0, 0);
+              c.toBlob(res, 'image/jpeg', 0.95);
+              URL.revokeObjectURL(image.src);
+            };
+            image.src = URL.createObjectURL(file);
+          });
+          const jpgBytes = new Uint8Array(await blob.arrayBuffer());
+          img = await pdf.embedJpg(jpgBytes);
+        } else {
+          img = await pdf.embedJpg(bytes);
+        }
+      }
+
+      const { width: iw, height: ih } = img;
+      let pw, ph;
+
+      if (itpPageSize === 'fit') {
+        pw = iw; ph = ih;
+      } else {
+        [pw, ph] = PAGE_SIZES[itpPageSize];
+        // Orient page to match image aspect ratio
+        if ((iw > ih) !== (pw > ph)) { [pw, ph] = [ph, pw]; }
+      }
+
+      const page = pdf.addPage([pw, ph]);
+
+      if (itpPageSize === 'fit') {
+        page.drawImage(img, { x: 0, y: 0, width: pw, height: ph });
+      } else {
+        // Scale image to fill page, maintaining aspect ratio
+        const scale = Math.min(pw / iw, ph / ih);
+        const dw = iw * scale, dh = ih * scale;
+        const x = (pw - dw) / 2, y = (ph - dh) / 2;
+        page.drawImage(img, { x, y, width: dw, height: dh });
+      }
+
+      bar.style.width = Math.round(5 + ((i + 1) / itpFiles.length) * 88) + '%';
+    }
+
+    label.textContent = 'Saving PDF…';
+    const outBytes = await pdf.save();
+    bar.style.width = '100%';
+
+    const totalIn = itpFiles.reduce((s, f) => s + f.size, 0);
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadItp', 'Download PDF');
+    result.dataset.bytes = JSON.stringify(Array.from(outBytes));
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err); alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false; progress.classList.add('hidden');
+  }
+}
+
+function downloadItp() {
+  const result = document.getElementById('itp-result');
+  const bytes = new Uint8Array(JSON.parse(result.dataset.bytes));
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const baseName = itpFiles[0].name.replace(/\.[^.]+$/, '');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = itpFiles.length === 1 ? `${baseName}.pdf` : 'images.pdf';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ════════════════════════════════════════
+// DRAG-TO-REORDER (shared)
+// ════════════════════════════════════════
+function setupDragSort(listEl, arr, renderFn) {
+  let dragIdx = null;
+  listEl.querySelectorAll('.file-list-item').forEach(item => {
+    item.addEventListener('dragstart', () => {
+      dragIdx = +item.dataset.idx;
+      setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      listEl.querySelectorAll('.file-list-item').forEach(i => i.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const dropIdx = +item.dataset.idx;
+      if (dragIdx !== null && dragIdx !== dropIdx) {
+        const [moved] = arr.splice(dragIdx, 1);
+        arr.splice(dropIdx, 0, moved);
+        renderFn();
+      }
+      dragIdx = null;
+    });
+  });
 }
 
 function downloadImg() {

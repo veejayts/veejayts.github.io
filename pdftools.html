@@ -704,9 +704,95 @@
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* ── Mobile header ── */
+    .mobile-header { display: none; }
+
+    /* ── Sidebar backdrop ── */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 40;
+    }
+    .sidebar-backdrop.visible { display: block; }
+
+    @media (max-width: 660px) {
+      .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 52px;
+        background: var(--sidebar-bg);
+        padding: 0 16px;
+        z-index: 60;
+        border-bottom: 1px solid #1e293b;
+      }
+
+      .mobile-brand {
+        font-size: 17px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+      }
+      .mobile-brand span { color: var(--accent); }
+
+      .hamburger {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s;
+      }
+      .hamburger:hover { color: #e2e8f0; }
+
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 50;
+      }
+      .sidebar.open { transform: translateX(0); }
+
+      .main {
+        margin-left: 0;
+        padding: 68px 16px 40px;
+        max-width: 100%;
+      }
+
+      .levels-grid { grid-template-columns: repeat(2, 1fr); }
+
+      .upload-zone { padding: 36px 20px; }
+
+      .stats-row { gap: 8px; }
+      .stat-val { font-size: 16px; }
+
+      .rotate-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .rotate-card { padding: 12px 6px; }
+      .rotate-name { font-size: 12px; }
+    }
   </style>
 </head>
 <body>
+
+<!-- Mobile top bar -->
+<header class="mobile-header">
+  <div class="mobile-brand">PDF<span>Tools</span></div>
+  <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+</header>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <!-- ════════════════ SIDEBAR ════════════════ -->
 <aside class="sidebar">
@@ -1219,6 +1305,19 @@ let pdfFile = null, imgFile = null;
 let pdfLevel = 1, imgLevel = 1;
 let compressedPdfBytes = null, compressedImgBlob = null;
 
+// ── Mobile sidebar toggle ──
+const _sidebar = document.querySelector('.sidebar');
+const _backdrop = document.getElementById('sidebarBackdrop');
+function closeSidebar() {
+  _sidebar.classList.remove('open');
+  _backdrop.classList.remove('visible');
+}
+document.getElementById('hamburgerBtn').addEventListener('click', () => {
+  const isOpen = _sidebar.classList.contains('open');
+  isOpen ? closeSidebar() : (_sidebar.classList.add('open'), _backdrop.classList.add('visible'));
+});
+_backdrop.addEventListener('click', closeSidebar);
+
 // ── Sidebar navigation ──
 document.querySelectorAll('.sidebar-item[data-tool]').forEach(item => {
   item.addEventListener('click', () => {
@@ -1226,6 +1325,7 @@ document.querySelectorAll('.sidebar-item[data-tool]').forEach(item => {
     document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
     item.classList.add('active');
     document.getElementById(item.dataset.tool).classList.add('active');
+    closeSidebar();
   });
 });
 

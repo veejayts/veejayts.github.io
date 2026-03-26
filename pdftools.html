@@ -1247,9 +1247,13 @@ function selectLevel(tool, level) {
   }
 }
 
-function resultHTML(originalSize, compressedSize, btnFn, label, title = 'Compression Complete') {
-  const pct = ((1 - compressedSize / originalSize) * 100).toFixed(1);
-  const saved = originalSize - compressedSize;
+function resultHTML(originalSize, outputSize, btnFn, label, title = 'Compression Complete', compress = true) {
+  const pct = ((1 - outputSize / originalSize) * 100).toFixed(1);
+  const saved = originalSize - outputSize;
+  const afterLabel = compress ? 'Compressed' : 'Output';
+  const note = compress
+    ? `Saved <strong>${pct}%</strong> &nbsp;·&nbsp; ${fmt(saved)} smaller`
+    : `Output size &nbsp;·&nbsp; ${fmt(outputSize)}`;
   return `
     <div class="results-card">
       <div class="results-head">
@@ -1263,12 +1267,12 @@ function resultHTML(originalSize, compressedSize, btnFn, label, title = 'Compres
         </div>
         <div class="stat-arrow">→</div>
         <div class="stat-box after">
-          <div class="stat-lbl">Compressed</div>
-          <div class="stat-val">${fmt(compressedSize)}</div>
+          <div class="stat-lbl">${afterLabel}</div>
+          <div class="stat-val">${fmt(outputSize)}</div>
         </div>
       </div>
       <div class="savings-note">
-        Saved <strong>${pct}%</strong> &nbsp;·&nbsp; ${fmt(saved)} smaller
+        ${note}
       </div>
       <button class="btn-download" onclick="${btnFn}()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1600,7 +1604,7 @@ async function runMerge() {
     const outBytes = await merged.save();
     bar.style.width = '100%';
     const totalIn = mergeFiles.reduce((s, f) => s + f.size, 0);
-    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadMerged', 'Download Merged PDF', 'Merge Complete');
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadMerged', 'Download Merged PDF', 'Merge Complete', false);
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {
@@ -1835,7 +1839,7 @@ async function runRotate() {
     const outBytes = await pdf.save();
     bar.style.width = '100%';
 
-    result.innerHTML = resultHTML(rotateFile.size, outBytes.byteLength, 'downloadRotated', 'Download Rotated PDF', 'Rotation Complete');
+    result.innerHTML = resultHTML(rotateFile.size, outBytes.byteLength, 'downloadRotated', 'Download Rotated PDF', 'Rotation Complete', false);
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {
@@ -2119,7 +2123,7 @@ async function runImageToPdf() {
     bar.style.width = '100%';
 
     const totalIn = itpFiles.reduce((s, f) => s + f.size, 0);
-    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadItp', 'Download PDF', 'Conversion Complete');
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadItp', 'Download PDF', 'Conversion Complete', false);
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {

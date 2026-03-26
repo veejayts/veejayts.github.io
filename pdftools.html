@@ -1247,13 +1247,13 @@ function selectLevel(tool, level) {
   }
 }
 
-function resultHTML(originalSize, compressedSize, btnFn, label) {
+function resultHTML(originalSize, compressedSize, btnFn, label, title = 'Compression Complete') {
   const pct = ((1 - compressedSize / originalSize) * 100).toFixed(1);
   const saved = originalSize - compressedSize;
   return `
     <div class="results-card">
       <div class="results-head">
-        <h3>Compression Complete</h3>
+        <h3>${title}</h3>
         <span class="badge-ok">Done</span>
       </div>
       <div class="stats-row">
@@ -1600,7 +1600,7 @@ async function runMerge() {
     const outBytes = await merged.save();
     bar.style.width = '100%';
     const totalIn = mergeFiles.reduce((s, f) => s + f.size, 0);
-    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadMerged', 'Download Merged PDF');
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadMerged', 'Download Merged PDF', 'Merge Complete');
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {
@@ -1835,7 +1835,7 @@ async function runRotate() {
     const outBytes = await pdf.save();
     bar.style.width = '100%';
 
-    result.innerHTML = resultHTML(rotateFile.size, outBytes.byteLength, 'downloadRotated', 'Download Rotated PDF');
+    result.innerHTML = resultHTML(rotateFile.size, outBytes.byteLength, 'downloadRotated', 'Download Rotated PDF', 'Rotation Complete');
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {
@@ -2119,7 +2119,7 @@ async function runImageToPdf() {
     bar.style.width = '100%';
 
     const totalIn = itpFiles.reduce((s, f) => s + f.size, 0);
-    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadItp', 'Download PDF');
+    result.innerHTML = resultHTML(totalIn, outBytes.byteLength, 'downloadItp', 'Download PDF', 'Conversion Complete');
     result.dataset.bytes = JSON.stringify(Array.from(outBytes));
     result.classList.remove('hidden');
   } catch (err) {

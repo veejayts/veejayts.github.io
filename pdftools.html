@@ -1017,6 +1017,13 @@
       </svg>
       Markdown to PDF
     </div>
+    <div class="sidebar-item" data-tool="odg-to-pdf">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+      </svg>
+      ODG to PDF <span style="font-size:10px;opacity:0.6;font-weight:400">(beta)</span>
+    </div>
   </div>
 </aside>
 
@@ -1513,6 +1520,54 @@
           <pre id="md-source-pre" class="md-source-pre"></pre>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── ODG to PDF ── -->
+  <div class="tool-panel" id="odg-to-pdf">
+    <div class="tool-header">
+      <h2>ODG to PDF</h2>
+      <p>Convert an OpenDocument Graphics (.odg) file to PDF entirely in your browser — nothing leaves your device.</p>
+    </div>
+
+    <div class="upload-zone" id="odg-zone">
+      <input type="file" id="odg-file-input" accept=".odg">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <h3>Drop your .odg file here</h3>
+      <p>or <span class="link">browse files</span></p>
+      <p class="hint">Supports .odg · Processed locally in your browser</p>
+    </div>
+
+    <div id="odg-settings" class="hidden">
+      <div class="file-bar">
+        <div class="file-bar-icon pdf">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+          </svg>
+        </div>
+        <div class="file-bar-info">
+          <div class="file-bar-name" id="odg-file-name"></div>
+          <div class="file-bar-size" id="odg-file-size"></div>
+        </div>
+        <button class="file-bar-remove" id="odg-remove" title="Remove file">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="btn-primary" id="odg-btn" onclick="runOdgToPdf()">Convert to PDF</button>
+      <div id="odg-progress" class="progress-wrap hidden">
+        <div class="progress-track"><div class="progress-fill" id="odg-bar"></div></div>
+        <div class="progress-label" id="odg-progress-label">Converting…</div>
+      </div>
+      <div id="odg-result" class="hidden"></div>
     </div>
   </div>
 
@@ -2811,6 +2866,588 @@ async function runMdToPdf() {
   } catch (err) {
     console.error(err);
     label.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ════════════════════════════════════════
+// ODG TO PDF
+// ════════════════════════════════════════
+const ODG_DRAW_NS   = 'urn:oasis:names:tc:opendocument:xmlns:drawing:1.0';
+const ODG_STYLE_NS  = 'urn:oasis:names:tc:opendocument:xmlns:style:1.0';
+const ODG_SVG_NS    = 'urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0';
+const ODG_FO_NS     = 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0';
+const ODG_TEXT_NS   = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0';
+const ODG_OFFICE_NS = 'urn:oasis:names:tc:opendocument:xmlns:office:1.0';
+const ODG_XLINK_NS  = 'http://www.w3.org/1999/xlink';
+
+let odgFile = null, odgFileName = 'document';
+
+const odgZone  = document.getElementById('odg-zone');
+const odgInput = document.getElementById('odg-file-input');
+
+odgInput.addEventListener('change', e => loadOdgFile(e.target.files[0]));
+odgZone.addEventListener('click', () => odgInput.click());
+odgZone.addEventListener('dragover', e => { e.preventDefault(); odgZone.classList.add('dragover'); });
+odgZone.addEventListener('dragleave', () => odgZone.classList.remove('dragover'));
+odgZone.addEventListener('drop', e => {
+  e.preventDefault();
+  odgZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) loadOdgFile(e.dataTransfer.files[0]);
+});
+document.getElementById('odg-remove').addEventListener('click', resetOdg);
+
+function loadOdgFile(file) {
+  if (!file) return;
+  odgFile = file;
+  odgFileName = file.name.replace(/\.[^.]+$/, '');
+  document.getElementById('odg-file-name').textContent = file.name;
+  document.getElementById('odg-file-size').textContent = fmt(file.size);
+  odgZone.classList.add('hidden');
+  document.getElementById('odg-settings').classList.remove('hidden');
+  document.getElementById('odg-result').classList.add('hidden');
+  odgInput.value = '';
+}
+
+function resetOdg() {
+  odgFile = null;
+  odgInput.value = '';
+  odgZone.classList.remove('hidden');
+  document.getElementById('odg-settings').classList.add('hidden');
+  document.getElementById('odg-progress').classList.add('hidden');
+  document.getElementById('odg-result').classList.add('hidden');
+}
+
+// Parse ODF length string → pixels at 96 dpi
+function parseOdfLen(s) {
+  if (!s) return 0;
+  const m = String(s).match(/^(-?[\d.]+)(cm|mm|in|pt|px)?/);
+  if (!m) return 0;
+  const v = parseFloat(m[1]);
+  switch (m[2]) {
+    case 'cm': return v * 96 / 2.54;
+    case 'mm': return v * 96 / 25.4;
+    case 'in': return v * 96;
+    case 'pt': return v * 96 / 72;
+    default:   return v;
+  }
+}
+
+// Parse ODF length → PDF points (72 DPI)
+function parseOdfLenPt(s) {
+  if (!s) return 0;
+  const m = String(s).match(/^(-?[\d.]+)(cm|mm|in|pt|px)?/);
+  if (!m) return 0;
+  const v = parseFloat(m[1]);
+  switch (m[2]) {
+    case 'cm': return v * 72 / 2.54;
+    case 'mm': return v * 72 / 25.4;
+    case 'in': return v * 72;
+    case 'px': return v * 72 / 96;
+    default:   return v;
+  }
+}
+
+// Map ODG hex colour → pdf-lib rgb()
+function odgHexToRgb(hex) {
+  const h = (hex || '#000000').replace('#', '');
+  return PDFLib.rgb(
+    parseInt(h.substr(0, 2), 16) / 255,
+    parseInt(h.substr(2, 2), 16) / 255,
+    parseInt(h.substr(4, 2), 16) / 255
+  );
+}
+
+// Map ODG font name + weight/style → pdf-lib font name string
+function odgStdFont(fontName, fontWeight, fontStyle) {
+  const bold   = fontWeight === 'bold' || Number(fontWeight) >= 600;
+  const italic = fontStyle === 'italic' || fontStyle === 'oblique';
+  const lc     = (fontName || '').toLowerCase();
+  if (lc.includes('times') || lc.includes('roman')) {
+    if (bold && italic) return 'Times-BoldItalic';
+    if (bold)           return 'Times-Bold';
+    if (italic)         return 'Times-Italic';
+    return 'Times-Roman';
+  }
+  if (lc.includes('courier') || lc.includes('mono')) {
+    if (bold && italic) return 'Courier-BoldOblique';
+    if (bold)           return 'Courier-Bold';
+    if (italic)         return 'Courier-Oblique';
+    return 'Courier';
+  }
+  // Helvetica for Calibri, Arial, Helvetica, sans-serif, etc.
+  if (bold && italic) return 'Helvetica-BoldOblique';
+  if (bold)           return 'Helvetica-Bold';
+  if (italic)         return 'Helvetica-Oblique';
+  return 'Helvetica';
+}
+
+function escXml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Build style map from an ODF XML document
+function buildOdgStyles(xmlDoc) {
+  const map = {};
+  for (const container of [
+    xmlDoc.getElementsByTagNameNS(ODG_OFFICE_NS, 'styles')[0],
+    xmlDoc.getElementsByTagNameNS(ODG_OFFICE_NS, 'automatic-styles')[0],
+  ]) {
+    if (!container) continue;
+    for (const el of container.getElementsByTagNameNS(ODG_STYLE_NS, 'style')) {
+      const name = el.getAttributeNS(ODG_STYLE_NS, 'name');
+      if (!name) continue;
+      const s = {};
+      const gp = el.getElementsByTagNameNS(ODG_STYLE_NS, 'graphic-properties')[0];
+      if (gp) {
+        s.fill        = gp.getAttributeNS(ODG_DRAW_NS, 'fill')         || null;
+        s.fillColor   = gp.getAttributeNS(ODG_DRAW_NS, 'fill-color')   || null;
+        s.stroke      = gp.getAttributeNS(ODG_DRAW_NS, 'stroke')       || null;
+        s.strokeColor = gp.getAttributeNS(ODG_DRAW_NS, 'stroke-color') || null;
+        s.strokeWidth = gp.getAttributeNS(ODG_SVG_NS,  'stroke-width') || null;
+        s.opacity     = gp.getAttributeNS(ODG_DRAW_NS, 'opacity')      || null;
+      }
+      const tp = el.getElementsByTagNameNS(ODG_STYLE_NS, 'text-properties')[0];
+      if (tp) {
+        s.fontName   = tp.getAttributeNS(ODG_STYLE_NS, 'font-name') || null;
+        s.fontSize   = tp.getAttributeNS(ODG_FO_NS, 'font-size')   || null;
+        s.fontWeight = tp.getAttributeNS(ODG_FO_NS, 'font-weight') || null;
+        s.fontStyle  = tp.getAttributeNS(ODG_FO_NS, 'font-style')  || null;
+        s.color      = tp.getAttributeNS(ODG_FO_NS, 'color')       || null;
+      }
+      const pp = el.getElementsByTagNameNS(ODG_STYLE_NS, 'paragraph-properties')[0];
+      if (pp) {
+        s.textAlign = pp.getAttributeNS(ODG_FO_NS, 'text-align') || null;
+      }
+      map[name] = s;
+    }
+  }
+  return map;
+}
+
+// Read page dimensions from styles.xml
+function getOdgPageSize(stylesDoc) {
+  let pageW = '28cm', pageH = '21cm'; // A4 landscape default
+  const masterPages = stylesDoc.getElementsByTagNameNS(ODG_STYLE_NS, 'master-page');
+  if (masterPages.length) {
+    const layoutName = masterPages[0].getAttributeNS(ODG_STYLE_NS, 'page-layout-name');
+    if (layoutName) {
+      for (const pl of stylesDoc.getElementsByTagNameNS(ODG_STYLE_NS, 'page-layout')) {
+        if (pl.getAttributeNS(ODG_STYLE_NS, 'name') === layoutName) {
+          const plp = pl.getElementsByTagNameNS(ODG_STYLE_NS, 'page-layout-properties')[0];
+          if (plp) {
+            pageW = plp.getAttributeNS(ODG_FO_NS, 'page-width')  || pageW;
+            pageH = plp.getAttributeNS(ODG_FO_NS, 'page-height') || pageH;
+          }
+          break;
+        }
+      }
+    }
+  }
+  return { pageW, pageH };
+}
+
+function odgFillAttr(st) {
+  if (!st || !st.fill || st.fill === 'none') return 'fill="none"';
+  if (st.fill === 'solid' && st.fillColor)  return `fill="${st.fillColor}"`;
+  return 'fill="#cccccc"';
+}
+
+function odgStrokeAttr(st) {
+  if (!st || !st.stroke || st.stroke === 'none') return 'stroke="none"';
+  const color = st.strokeColor || '#000000';
+  const width = st.strokeWidth ? Math.max(0.5, parseOdfLen(st.strokeWidth)) : 1;
+  return `stroke="${color}" stroke-width="${width}"`;
+}
+
+// Scale polyline/polygon points from ODF viewBox coords to SVG px coords
+function odgTransformPoints(pts, vbStr, x, y, w, h) {
+  if (!pts) return '';
+  const vbParts = vbStr ? vbStr.trim().split(/\s+/) : null;
+  const vbW = vbParts ? parseFloat(vbParts[2]) || w : w;
+  const vbH = vbParts ? parseFloat(vbParts[3]) || h : h;
+  return pts.trim().split(/\s+/).map(p => {
+    const [px, py] = p.split(',').map(Number);
+    return `${x + (px / vbW) * w},${y + (py / vbH) * h}`;
+  }).join(' ');
+}
+
+// Render text:p elements inside a text box as SVG <text> elements
+function odgRenderTextBox(textBox, x, y, w, h, styles) {
+  const paras = Array.from(textBox.getElementsByTagNameNS(ODG_TEXT_NS, 'p'));
+  if (!paras.length) return '';
+
+  const clipId = `tc${Math.round(x)}_${Math.round(y)}_${Math.round(w)}_${Math.round(h)}`;
+  let out = `<defs><clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath></defs>`;
+  out += `<g clip-path="url(#${clipId})">`;
+
+  let lineY = y + 14;
+
+  for (const p of paras) {
+    const pSn = p.getAttributeNS(ODG_TEXT_NS, 'style-name');
+    const pSt = pSn ? (styles[pSn] || {}) : {};
+    const align  = pSt.textAlign || 'left';
+    const anchor = align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
+    const tx = align === 'center' ? x + w / 2 : align === 'right' ? x + w - 4 : x + 4;
+
+    let text = '', fontSize = 12, color = '#000000', fontWeight = 'normal', fontStyle = 'normal';
+
+    for (const node of p.childNodes) {
+      if (node.nodeType === 3) {
+        text += node.nodeValue || '';
+      } else if (node.nodeType === 1 && node.localName === 'span') {
+        const sSn = node.getAttributeNS(ODG_TEXT_NS, 'style-name');
+        const sSt = sSn ? (styles[sSn] || {}) : {};
+        if (sSt.fontSize)   fontSize   = parseOdfLen(sSt.fontSize);
+        if (sSt.color)      color      = sSt.color;
+        if (sSt.fontWeight) fontWeight = sSt.fontWeight;
+        if (sSt.fontStyle)  fontStyle  = sSt.fontStyle;
+        text += node.textContent || '';
+      } else if (node.nodeType === 1 && node.localName === 'line-break') {
+        text += '\n';
+      }
+    }
+
+    for (const line of text.split('\n')) {
+      if (line.trim()) {
+        out += `<text x="${tx}" y="${lineY}" text-anchor="${anchor}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" font-style="${fontStyle}">${escXml(line)}</text>`;
+      }
+      lineY += Math.max(fontSize * 1.35, 14);
+    }
+    if (!text) lineY += 14;
+  }
+
+  out += '</g>';
+  return out;
+}
+
+// Convert a single draw element to an SVG fragment
+function odgElToSvg(el, styles, images, bgOnly) {
+  const ln  = el.localName;
+  const sn  = el.getAttributeNS(ODG_DRAW_NS, 'style-name') || '';
+  const st  = sn ? (styles[sn] || {}) : {};
+  const fill   = odgFillAttr(st);
+  const stroke = odgStrokeAttr(st);
+  const op = st.opacity && st.opacity !== '100%' ? ` opacity="${(parseFloat(st.opacity) / 100).toFixed(2)}"` : '';
+
+  // Position/size helpers — prefer svg: namespace, fall back to draw:
+  const ga = (svgN, drawN) =>
+    el.getAttributeNS(ODG_SVG_NS, svgN) || el.getAttributeNS(ODG_DRAW_NS, drawN || svgN) || '';
+  const x = parseOdfLen(ga('x'));
+  const y = parseOdfLen(ga('y'));
+  const w = parseOdfLen(ga('width'));
+  const h = parseOdfLen(ga('height'));
+
+  switch (ln) {
+    case 'rect': {
+      const rx = parseOdfLen(el.getAttributeNS(ODG_DRAW_NS, 'corner-radius') || '0');
+      return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" ry="${rx}" ${fill} ${stroke}${op}/>`;
+    }
+    case 'ellipse': {
+      return `<ellipse cx="${x + w/2}" cy="${y + h/2}" rx="${w/2}" ry="${h/2}" ${fill} ${stroke}${op}/>`;
+    }
+    case 'circle': {
+      const r  = parseOdfLen(ga('r'));
+      const cx = parseOdfLen(ga('cx'));
+      const cy = parseOdfLen(ga('cy'));
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" ${fill} ${stroke}${op}/>`;
+    }
+    case 'line':
+    case 'connector': {
+      const x1 = parseOdfLen(ga('x1')); const y1 = parseOdfLen(ga('y1'));
+      const x2 = parseOdfLen(ga('x2')); const y2 = parseOdfLen(ga('y2'));
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${stroke}${op}/>`;
+    }
+    case 'polyline':
+    case 'polygon': {
+      const pts = el.getAttributeNS(ODG_DRAW_NS, 'points') || '';
+      const vb  = ga('viewBox');
+      const tag = ln === 'polygon' ? 'polygon' : 'polyline';
+      return `<${tag} points="${odgTransformPoints(pts, vb, x, y, w, h)}" ${fill} ${stroke}${op}/>`;
+    }
+    case 'path': {
+      const d  = el.getAttributeNS(ODG_SVG_NS, 'd') || '';
+      const vb = ga('viewBox');
+      if (vb && w && h) {
+        const vbP = vb.trim().split(/\s+/);
+        const sx  = w / (parseFloat(vbP[2]) || w);
+        const sy  = h / (parseFloat(vbP[3]) || h);
+        return `<g transform="translate(${x},${y}) scale(${sx},${sy})"><path d="${escXml(d)}" ${fill} ${stroke}${op}/></g>`;
+      }
+      return `<path d="${escXml(d)}" ${fill} ${stroke}${op}/>`;
+    }
+    case 'frame': {
+      const imgEl   = el.getElementsByTagNameNS(ODG_DRAW_NS, 'image')[0];
+      const textBox = el.getElementsByTagNameNS(ODG_DRAW_NS, 'text-box')[0];
+      if (imgEl) {
+        const href = (imgEl.getAttributeNS(ODG_XLINK_NS, 'href') || '').replace(/^\.\//, '');
+        const src  = images[href] || '';
+        if (src) return `<image x="${x}" y="${y}" width="${w}" height="${h}" href="${src}" preserveAspectRatio="xMidYMid meet"/>`;
+        return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#f0f0f0" stroke="#cccccc" stroke-width="1"/>`;
+      }
+      if (textBox && !bgOnly) return odgRenderTextBox(textBox, x, y, w, h, styles);
+      return '';
+    }
+    case 'g': {
+      let out = '<g>';
+      for (const c of el.childNodes) if (c.nodeType === 1) out += odgElToSvg(c, styles, images, bgOnly);
+      return out + '</g>';
+    }
+    default: return '';
+  }
+}
+
+// Convert a draw:page element to a full SVG string
+function odgPageToSvg(pageEl, pageW, pageH, styles, images, bgOnly) {
+  const W = parseOdfLen(pageW);
+  const H = parseOdfLen(pageH);
+  const pSn  = pageEl.getAttributeNS(ODG_DRAW_NS, 'style-name') || '';
+  const pSt  = pSn ? (styles[pSn] || {}) : {};
+  const bg   = (pSt.fill === 'solid' && pSt.fillColor) ? pSt.fillColor : '#ffffff';
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  svg += `<defs><clipPath id="page-clip"><rect width="${W}" height="${H}"/></clipPath></defs>`;
+  svg += `<rect width="${W}" height="${H}" fill="${bg}"/>`;
+  svg += `<g clip-path="url(#page-clip)">`;
+  for (const child of pageEl.childNodes) {
+    if (child.nodeType === 1) svg += odgElToSvg(child, styles, images, bgOnly);
+  }
+  svg += '</g></svg>';
+  return svg;
+}
+
+// Render a draw:frame's text-box as real PDF text (selectable, correctly positioned)
+async function odgRenderFrameTextToPdf(frameEl, pageHPt, styles, pdfPage, fonts) {
+  const textBox = frameEl.getElementsByTagNameNS(ODG_DRAW_NS, 'text-box')[0];
+  if (!textBox) return;
+
+  const ga = (svgN, drawN) =>
+    frameEl.getAttributeNS(ODG_SVG_NS, svgN) || frameEl.getAttributeNS(ODG_DRAW_NS, drawN || svgN) || '';
+  const xPt = parseOdfLenPt(ga('x'));
+  const yPt = parseOdfLenPt(ga('y'));
+  const wPt = parseOdfLenPt(ga('width'));
+
+  const frameTstName = frameEl.getAttributeNS(ODG_DRAW_NS, 'text-style-name') || '';
+  const frameTst = frameTstName ? (styles[frameTstName] || {}) : {};
+
+  const paras = Array.from(textBox.getElementsByTagNameNS(ODG_TEXT_NS, 'p'));
+  let lineTopPt = yPt;
+
+  for (const p of paras) {
+    const pSn = p.getAttributeNS(ODG_TEXT_NS, 'style-name') || '';
+    const pSt = pSn ? (styles[pSn] || {}) : {};
+    const align = pSt.textAlign || frameTst.textAlign || 'start';
+    const defFsPt = parseOdfLenPt(frameTst.fontSize || pSt.fontSize || '9pt');
+
+    // Recursively collect text segments from this paragraph
+    const segs = [];
+    function extractNodes(node, inh) {
+      for (const cn of node.childNodes) {
+        if (cn.nodeType === 3) {
+          const t = cn.nodeValue || '';
+          if (t) segs.push({ text: t, st: inh });
+        } else if (cn.nodeType === 1) {
+          if (cn.localName === 's') {
+            segs.push({ text: ' ', st: inh });
+          } else if (cn.localName === 'span') {
+            const sSn = cn.getAttributeNS(ODG_TEXT_NS, 'style-name') || '';
+            const merged = sSn ? { ...inh, ...styles[sSn] } : inh;
+            extractNodes(cn, merged);
+          } else if (cn.localName === 'line-break') {
+            segs.push({ lineBreak: true });
+          }
+        }
+      }
+    }
+    extractNodes(p, { ...frameTst, ...pSt });
+
+    // Split segs into lines at line-break markers
+    const lines = [[]];
+    for (const seg of segs) {
+      if (seg.lineBreak) lines.push([]);
+      else lines[lines.length - 1].push(seg);
+    }
+
+    for (const lineSegs of lines) {
+      if (!lineSegs.length) { lineTopPt += defFsPt * 1.35; continue; }
+
+      let maxFs = 0;
+      for (const s of lineSegs) {
+        const fs = s.st.fontSize ? parseOdfLenPt(s.st.fontSize) : defFsPt;
+        if (fs > maxFs) maxFs = fs;
+      }
+      if (!maxFs) maxFs = defFsPt;
+
+      // PDF baseline: page origin is bottom-left; ascent ratio ≈ 0.8
+      const baselineY = pageHPt - lineTopPt - maxFs * 0.8;
+
+      const drawSeg = (s, atX) => {
+        if (!s.text) return 0;
+        const fs = s.st.fontSize ? parseOdfLenPt(s.st.fontSize) : maxFs;
+        const fk = odgStdFont(s.st.fontName, s.st.fontWeight, s.st.fontStyle);
+        const font = fonts[fk];
+        const color = s.st.color ? odgHexToRgb(s.st.color) : PDFLib.rgb(0, 0, 0);
+        if (baselineY > 0) pdfPage.drawText(s.text, { x: atX, y: baselineY, size: fs, font, color });
+        return font.widthOfTextAtSize(s.text, fs);
+      };
+
+      if (align === 'center') {
+        let totalW = 0;
+        for (const s of lineSegs) {
+          const fs = s.st.fontSize ? parseOdfLenPt(s.st.fontSize) : maxFs;
+          totalW += fonts[odgStdFont(s.st.fontName, s.st.fontWeight, s.st.fontStyle)].widthOfTextAtSize(s.text, fs);
+        }
+        let cx = xPt + (wPt - totalW) / 2;
+        for (const s of lineSegs) cx += drawSeg(s, cx);
+      } else if (align === 'right' || align === 'end') {
+        let totalW = 0;
+        for (const s of lineSegs) {
+          const fs = s.st.fontSize ? parseOdfLenPt(s.st.fontSize) : maxFs;
+          totalW += fonts[odgStdFont(s.st.fontName, s.st.fontWeight, s.st.fontStyle)].widthOfTextAtSize(s.text, fs);
+        }
+        let rx = xPt + wPt - totalW;
+        for (const s of lineSegs) rx += drawSeg(s, rx);
+      } else {
+        let lx = xPt;
+        for (const s of lineSegs) lx += drawSeg(s, lx);
+      }
+
+      lineTopPt += maxFs * 1.35;
+    }
+  }
+}
+
+async function runOdgToPdf() {
+  if (!odgFile) return;
+  const btn      = document.getElementById('odg-btn');
+  const progress = document.getElementById('odg-progress');
+  const bar      = document.getElementById('odg-bar');
+  const label    = document.getElementById('odg-progress-label');
+  const result   = document.getElementById('odg-result');
+
+  btn.disabled = true;
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  bar.style.width = '5%';
+  label.textContent = 'Reading file…';
+
+  try {
+    const ab  = await odgFile.arrayBuffer();
+    const zip = await JSZip.loadAsync(ab);
+
+    bar.style.width = '15%';
+    label.textContent = 'Parsing ODG…';
+
+    const parser     = new DOMParser();
+    const contentXml = await zip.file('content.xml').async('string');
+    const stylesFile = zip.file('styles.xml');
+    const stylesXml  = stylesFile ? await stylesFile.async('string') : '<r/>';
+    const contentDoc = parser.parseFromString(contentXml, 'text/xml');
+    const stylesDoc  = parser.parseFromString(stylesXml,  'text/xml');
+
+    // Load embedded images as data URIs
+    const images = {};
+    for (const [path, file] of Object.entries(zip.files)) {
+      if (/\.(png|jpe?g|gif|webp)$/i.test(path)) {
+        const ext  = path.split('.').pop().toLowerCase();
+        const mime = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+        const b64  = await file.async('base64');
+        images[path]                        = `data:${mime};base64,${b64}`;
+        images[path.replace(/^\.\//, '')] = images[path];
+      }
+    }
+
+    const styles = { ...buildOdgStyles(stylesDoc), ...buildOdgStyles(contentDoc) };
+    const { pageW, pageH } = getOdgPageSize(stylesDoc);
+
+    const drawingEl = contentDoc.getElementsByTagNameNS(ODG_OFFICE_NS, 'drawing')[0];
+    if (!drawingEl) throw new Error('No drawing element found in ODG file');
+    const pages = Array.from(drawingEl.getElementsByTagNameNS(ODG_DRAW_NS, 'page'));
+    if (!pages.length) throw new Error('No pages found in ODG file');
+
+    bar.style.width = '30%';
+    const SCALE = 2;
+    const W   = parseOdfLen(pageW);
+    const H   = parseOdfLen(pageH);
+    const PX_W = Math.round(W * SCALE);
+    const PX_H = Math.round(H * SCALE);
+    const ptW  = parseOdfLenPt(pageW);
+    const ptH  = parseOdfLenPt(pageH);
+
+    const pdfDoc = await PDFLib.PDFDocument.create();
+
+    // Pre-embed all standard fonts needed for text overlay
+    const pdfFonts = {};
+    for (const k of ['Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique',
+                      'Times-Roman', 'Times-Bold', 'Times-Italic', 'Times-BoldItalic',
+                      'Courier', 'Courier-Bold', 'Courier-Oblique', 'Courier-BoldOblique']) {
+      pdfFonts[k] = await pdfDoc.embedFont(k);
+    }
+
+    for (let i = 0; i < pages.length; i++) {
+      bar.style.width = `${30 + ((i + 1) / pages.length) * 55}%`;
+      label.textContent = `Rendering page ${i + 1} of ${pages.length}…`;
+
+      // Render shapes-only SVG (bgOnly=true skips text boxes)
+      const svgStr  = odgPageToSvg(pages[i], pageW, pageH, styles, images, true);
+      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+      const svgUrl  = URL.createObjectURL(svgBlob);
+
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width  = PX_W;
+        canvas.height = PX_H;
+        const ctx = canvas.getContext('2d');
+
+        const img = new Image();
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = svgUrl; });
+        ctx.drawImage(img, 0, 0, PX_W, PX_H);
+
+        const pngUrl = canvas.toDataURL('image/png');
+        const pngAb  = await fetch(pngUrl).then(r => r.arrayBuffer());
+        const pngImg = await pdfDoc.embedPng(pngAb);
+
+        const page = pdfDoc.addPage([ptW, ptH]);
+        page.drawImage(pngImg, { x: 0, y: 0, width: ptW, height: ptH });
+
+        // Overlay real selectable text for every draw:frame on this page
+        for (const child of Array.from(pages[i].childNodes)) {
+          if (child.nodeType === 1 && child.localName === 'frame') {
+            await odgRenderFrameTextToPdf(child, ptH, styles, page, pdfFonts);
+          }
+        }
+      } finally {
+        URL.revokeObjectURL(svgUrl);
+      }
+    }
+
+    bar.style.width = '90%';
+    label.textContent = 'Saving PDF…';
+
+    const pdfBytes = await pdfDoc.save();
+    const pdfBlob  = new Blob([pdfBytes], { type: 'application/pdf' });
+    const dlUrl    = URL.createObjectURL(pdfBlob);
+    const a        = document.createElement('a');
+    a.href = dlUrl; a.download = odgFileName + '.pdf';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(dlUrl);
+
+    bar.style.width = '100%';
+    label.textContent = 'Done!';
+    result.innerHTML = `
+      <div class="results-card">
+        <div class="results-head">
+          <h3>PDF Downloaded</h3>
+          <span class="badge-ok">Done</span>
+        </div>
+        <div class="savings-note">${pages.length} page${pages.length > 1 ? 's' : ''} converted &nbsp;·&nbsp; ${fmt(pdfBlob.size)}</div>
+      </div>`;
+    result.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    label.textContent = 'Error: ' + (err.message || 'Unknown error');
   } finally {
     btn.disabled = false;
   }

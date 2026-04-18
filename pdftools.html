@@ -2888,7 +2888,6 @@ const odgZone  = document.getElementById('odg-zone');
 const odgInput = document.getElementById('odg-file-input');
 
 odgInput.addEventListener('change', e => loadOdgFile(e.target.files[0]));
-odgZone.addEventListener('click', () => odgInput.click());
 odgZone.addEventListener('dragover', e => { e.preventDefault(); odgZone.classList.add('dragover'); });
 odgZone.addEventListener('dragleave', () => odgZone.classList.remove('dragover'));
 odgZone.addEventListener('drop', e => {
@@ -3287,7 +3286,7 @@ async function odgRenderFrameTextToPdf(frameEl, pageHPt, styles, pdfPage, fonts)
         const fs = s.st.fontSize ? parseOdfLenPt(s.st.fontSize) : maxFs;
         const fk = odgStdFont(s.st.fontName, s.st.fontWeight, s.st.fontStyle);
         const font = fonts[fk];
-        const color = s.st.color ? odgHexToRgb(s.st.color) : PDFLib.rgb(0, 0, 0);
+        const color = odgHexToRgb(s.st.color || '#000000');
         if (baselineY > 0) pdfPage.drawText(s.text, { x: atX, y: baselineY, size: fs, font, color });
         return font.widthOfTextAtSize(s.text, fs);
       };
@@ -3389,7 +3388,7 @@ async function runOdgToPdf() {
       bar.style.width = `${30 + ((i + 1) / pages.length) * 55}%`;
       label.textContent = `Rendering page ${i + 1} of ${pages.length}…`;
 
-      // Render shapes-only SVG (bgOnly=true skips text boxes)
+      // SVG render without text boxes → visual PNG layer (text drawn separately by pdf-lib)
       const svgStr  = odgPageToSvg(pages[i], pageW, pageH, styles, images, true);
       const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
       const svgUrl  = URL.createObjectURL(svgBlob);
@@ -3411,11 +3410,18 @@ async function runOdgToPdf() {
         const page = pdfDoc.addPage([ptW, ptH]);
         page.drawImage(pngImg, { x: 0, y: 0, width: ptW, height: ptH });
 
-        // Overlay real selectable text for every draw:frame on this page
-        for (const child of Array.from(pages[i].childNodes)) {
-          if (child.nodeType === 1 && child.localName === 'frame') {
-            await odgRenderFrameTextToPdf(child, ptH, styles, page, pdfFonts);
+        // Overlay real selectable text for every draw:frame on this page (recursive)
+        function collectFrames(el) {
+          const frames = [];
+          for (const child of el.childNodes) {
+            if (child.nodeType !== 1) continue;
+            if (child.localName === 'frame') frames.push(child);
+            else frames.push(...collectFrames(child));
           }
+          return frames;
+        }
+        for (const frame of collectFrames(pages[i])) {
+          await odgRenderFrameTextToPdf(frame, ptH, styles, page, pdfFonts);
         }
       } finally {
         URL.revokeObjectURL(svgUrl);

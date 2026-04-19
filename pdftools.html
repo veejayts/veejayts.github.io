@@ -945,7 +945,7 @@
 
   <div class="sidebar-group">
     <div class="sidebar-group-label">Compress</div>
-    <div class="sidebar-item active" data-tool="pdf-compress">
+    <div class="sidebar-item" data-tool="pdf-compress">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
@@ -1031,7 +1031,7 @@
 <main class="main">
 
   <!-- ── PDF Compress ── -->
-  <div class="tool-panel active" id="pdf-compress">
+  <div class="tool-panel" id="pdf-compress">
     <div class="tool-header">
       <h2>Compress PDF</h2>
       <p>Reduce your PDF file size entirely in the browser — nothing leaves your device.</p>
@@ -1597,15 +1597,28 @@ document.getElementById('hamburgerBtn').addEventListener('click', () => {
 _backdrop.addEventListener('click', closeSidebar);
 
 // ── Sidebar navigation ──
+function activateTool(toolId) {
+  const validIds = ['pdf-compress','img-compress','merge-pdf','split-pdf',
+                    'rotate-pdf','pdf-to-image','image-to-pdf','md-to-pdf','odg-to-pdf'];
+  if (!validIds.includes(toolId)) toolId = 'pdf-compress';
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.sidebar-item[data-tool="${toolId}"]`)?.classList.add('active');
+  document.getElementById(toolId)?.classList.add('active');
+  closeSidebar();
+}
+
 document.querySelectorAll('.sidebar-item[data-tool]').forEach(item => {
   item.addEventListener('click', () => {
-    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById(item.dataset.tool).classList.add('active');
-    closeSidebar();
+    window.location.hash = item.dataset.tool;
   });
 });
+
+window.addEventListener('hashchange', () => {
+  activateTool(window.location.hash.slice(1));
+});
+
+activateTool(window.location.hash.slice(1) || 'pdf-compress');
 
 // ── Helpers ──
 function fmt(bytes) {

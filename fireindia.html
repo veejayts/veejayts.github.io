@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🇮🇳 FIRE Calculator — India Edition</title>
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666666;
+      --border: #e0e0e0;
+      --accent-orange: #FF9933;
+      --accent-green: #138808;
+      --danger: #D32F2F;
+      --info: #1976D2;
+      --warning: #F57C00;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #121212;
+        --card: #1e1e1e;
+        --text-primary: #e0e0e0;
+        --text-secondary: #999999;
+        --border: #333333;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      margin: 0;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    .card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    h2 { margin-top: 0; margin-bottom: 4px; font-size: 1.5rem; font-weight: 700; }
+    .subtitle { margin-top: 0; margin-bottom: 24px; color: var(--text-secondary); font-size: 0.875rem; }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab.active {
+      background: var(--card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: var(--card);
+      color: var(--text-primary);
+      transition: border-color 0.2s;
+    }
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: var(--accent-orange);
+    }
+    .field .hint {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #FF9933 0%, #138808 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:hover { opacity: 0.92; }
+    .btn:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: var(--bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .results { display: none; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .stat-value { font-size: 1.25rem; font-weight: 700; }
+    .panel {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { padding: 8px 10px; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    th { color: var(--text-secondary); font-weight: 600; border-bottom: 1px solid var(--border); }
+    tr { border-bottom: 1px solid rgba(0,0,0,0.04); }
+    .positive { color: var(--accent-green); font-weight: 600; }
+    .negative { color: var(--danger); font-weight: 600; }
+    .scroll-box { max-height: 280px; overflow-y: auto; }
+    #chartSvg { display: block; width: 100%; }
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .scenario-card {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .scenario-card:hover { border-color: var(--accent-orange); }
+    .scenario-card.selected {
+      border-color: var(--accent-green);
+      background: rgba(19,136,8,0.06);
+    }
+    .scenario-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .scenario-return {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    .math-box {
+      background: rgba(255,153,51,0.08);
+      border-left: 3px solid var(--accent-orange);
+      border-radius: 0 8px 8px 0;
+      padding: 14px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+    }
+    .math-box code {
+      background: rgba(0,0,0,0.06);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', monospace;
+    }
+    .milestone-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .milestone-age {
+      font-weight: 700;
+      min-width: 50px;
+    }
+    .milestone-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .milestone-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .milestone-amount {
+      min-width: 100px;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .sensitivity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .sensitivity-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .sensitivity-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+    .sensitivity-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .post-retire-table td { font-size: 0.78rem; }
+    .share-box {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .share-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .share-btn:hover { background: var(--bg); }
+    .locked-note {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: rgba(25,118,210,0.08);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-top: 6px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--border);
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    input:checked + .toggle-slider { background: var(--accent-green); }
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
+    @media (max-width: 600px) {
+      .grid, .scenario-grid, .sensitivity-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .card { padding: 16px; }
+    }
+  </style>
+<base target="_blank">
+</head>
+<body>
+  <div class="card">
+    <h2>🇮🇳 FIRE Calculator</h2>
+    <p class="subtitle">Financial Independence, Retire Early — India Edition (Enhanced)</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('forward')">Forward Calculator</button>
+      <button class="tab" onclick="switchTab('reverse')">Reverse Calculator</button>
+    </div>
+
+    <!-- FORWARD CALCULATOR -->
+    <div id="tab-forward" class="tab-content active">
+      <div class="scenario-grid">
+        <div class="scenario-card" onclick="selectScenario(0.08, this)">
+          <div class="scenario-name">Conservative</div>
+          <div class="scenario-return">8% — FDs / Debt</div>
+        </div>
+        <div class="scenario-card" onclick="selectScenario(0.10, this)">
+          <div class="scenario-name">Balanced</div>
+          <div class="scenario-return">10% — Hybrid</div>
+        </div>
+        <div class="scenario-card selected" onclick="selectScenario(0.12, this)">
+          <div class="scenario-name">Aggressive</div>
+          <div class="scenario-return">12% — Equity</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Current Age</label>
+          <input id="f_currentAge" type="number" value="28" min="18" max="70">
+        </div>
+        <div class="field">
+          <label>Retirement Age</label>
+          <input id="f_retireAge" type="number" value="45" min="30" max="80">
+        </div>
+        <div class="field">
+          <label>Monthly Expenses (₹)</label>
+          <input id="f_monthlyExp" type="number" value="75000" min="10000" step="1000">
+        </div>
+        <div class="field">
+          <label>Current Corpus (₹)</label>
+          <input id="f_currentCorpus" type="number" value="1500000" min="0" step="100000">
+        </div>
+        <div class="field">
+          <label>Monthly SIP (₹)</label>
+          <input id="f_monthlySIP" type="number" value="50000" min="0" step="1000">
+        </div>
+        <div class="field">
+          <label>Annual SIP Hike (%)</label>
+          <input id="f_sipHike" type="number" value="10" min="0" max="30" step="1">
+          <div class="hint">Yearly increase in SIP amount</div>
+        </div>
+        <div class="field">
+          <label>Expected Return (%)</label>
+          <input id="f_expectedReturn" type="number" value="12" min="4" max="20" step="0.5">
+        </div>
+        <div class="field">
+          <label>Inflation (%)</label>
+          <input id="f_inflation" type="number" value="6" min="2" max="12" step="0.5">
+        </div>
+        <div class="field">
+          <label>Safe Withdrawal (%)</label>
+          <input id="f_swr" type="number" value="4" min="2" max="6" step="0.25">
+        </div>
+        <div class="field">
+          <label>Post-Retirement Return (%)</label>
+          <input id="f_postReturn" type="number" value="7" min="3" max="12" step="0.5">
+          <div class="hint">Conservative portfolio after FIRE</div>
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="field">
+          <label>NPS Corpus (₹) — Locked till 60</label>
+          <input id="f_npsCorpus" type="number" value="0" min="0" step="100000">
+        </div>
+        <div class="field">
+          <label>EPF Balance (₹) — Locked till 58</label>
+          <input id="f_epfBalance" type="number" value="0" min="0" step="100000">
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <span style="font-size: 0.85rem; font-weight: 600;">Apply Tax on Returns (LTCG 12.5%)</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="f_taxToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <button class="btn" onclick="calculateForward()">Calculate FIRE 🔥</button>
+
+      <div class="results" id="f_results">
+        <div class="math-box" id="f_mathBox"></div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Target Corpus</div>
+            <div class="stat-value" id="f_targetCorpus">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Projected Corpus</div>
+            <div class="stat-value" id="f_projectedCorpus">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Years to FIRE</div>
+            <div class="stat-value" id="f_yearsToFire">—</div>
+          </div>
+          <div class="stat-box" id="f_statusBox">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" id="f_fireStatus">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">🔒 Locked Retirement Accounts</div>
+          <div id="f_lockedAccounts"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">📍 Corpus Milestones</div>
+          <div id="f_milestones"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">📊 Sensitivity Analysis</div>
+          <div class="sensitivity-grid" id="f_sensitivity"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">📅 Year-by-Year Projection</div>
+          <div class="scroll-box" id="f_projectionTable"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">📈 Corpus Growth Chart</div>
+          <svg id="f_chartSvg" height="240"></svg>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">🏖️ Post-Retirement Simulation (30 Years)</div>
+          <div class="scroll-box" id="f_postRetireTable"></div>
+        </div>
+
+        <div class="share-box">
+          <button class="share-btn" onclick="copyResults()">📋 Copy Results</button>
+          <button class="share-btn" onclick="shareWhatsApp()">📱 Share</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVERSE CALCULATOR -->
+    <div id="tab-reverse" class="tab-content">
+      <div class="grid">
+        <div class="field">
+          <label>Current Age</label>
+          <input id="r_currentAge" type="number" value="28" min="18" max="70">
+        </div>
+        <div class="field">
+          <label>Target Retirement Age</label>
+          <input id="r_retireAge" type="number" value="45" min="30" max="80">
+        </div>
+        <div class="field">
+          <label>Current Monthly Expenses (₹)</label>
+          <input id="r_monthlyExp" type="number" value="75000" min="10000" step="1000">
+        </div>
+        <div class="field">
+          <label>Current Corpus (₹)</label>
+          <input id="r_currentCorpus" type="number" value="1500000" min="0" step="100000">
+        </div>
+        <div class="field">
+          <label>Expected Return (%)</label>
+          <input id="r_expectedReturn" type="number" value="12" min="4" max="20" step="0.5">
+        </div>
+        <div class="field">
+          <label>Inflation (%)</label>
+          <input id="r_inflation" type="number" value="6" min="2" max="12" step="0.5">
+        </div>
+        <div class="field">
+          <label>Safe Withdrawal (%)</label>
+          <input id="r_swr" type="number" value="4" min="2" max="6" step="0.25">
+        </div>
+        <div class="field">
+          <label>Annual SIP Hike (%)</label>
+          <input id="r_sipHike" type="number" value="10" min="0" max="30" step="1">
+        </div>
+      </div>
+
+      <button class="btn" onclick="calculateReverse()">Find Required SIP 💰</button>
+
+      <div class="results" id="r_results">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Target Corpus Needed</div>
+            <div class="stat-value" id="r_targetCorpus">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Required Monthly SIP</div>
+            <div class="stat-value" id="r_requiredSIP">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Total Invested</div>
+            <div class="stat-value" id="r_totalInvested">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Wealth Gained</div>
+            <div class="stat-value" id="r_wealthGained">—</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">📅 Year-by-Year with Required SIP</div>
+          <div class="scroll-box" id="r_projectionTable"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===================== TABS =====================
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+
+    function selectScenario(rate, el) {
+      document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('f_expectedReturn').value = (rate * 100).toFixed(1);
+    }
+
+    // ===================== UTILS =====================
+    function formatINR(n) {
+      if (Math.abs(n) >= 1e7) return '₹' + (n / 1e7).toFixed(2) + ' Cr';
+      if (Math.abs(n) >= 1e5) return '₹' + (n / 1e5).toFixed(2) + ' L';
+      return '₹' + Math.round(n).toLocaleString('en-IN');
+    }
+
+    function applyTax(returnRate, isTaxed) {
+      if (!isTaxed) return returnRate;
+      // Simplified: assume 12.5% LTCG on gains above 1.25L exemption
+      // Approximate effective tax ~7% on total returns for large corpuses
+      return returnRate * 0.93;
+    }
+
+    // ===================== FORWARD CALCULATOR =====================
+    let lastForwardResults = null;
+
+    function calculateForward() {
+      const currentAge = parseInt(document.getElementById('f_currentAge').value) || 28;
+      const retireAge = parseInt(document.getElementById('f_retireAge').value) || 45;
+      const monthlyExp = parseFloat(document.getElementById('f_monthlyExp').value) || 75000;
+      const currentCorpus = parseFloat(document.getElementById('f_currentCorpus').value) || 1500000;
+      const monthlySIP = parseFloat(document.getElementById('f_monthlySIP').value) || 50000;
+      const sipHike = (parseFloat(document.getElementById('f_sipHike').value) || 0) / 100;
+      let expectedReturn = (parseFloat(document.getElementById('f_expectedReturn').value) || 12) / 100;
+      const inflation = (parseFloat(document.getElementById('f_inflation').value) || 6) / 100;
+      const swr = (parseFloat(document.getElementById('f_swr').value) || 4) / 100;
+      const postReturn = (parseFloat(document.getElementById('f_postReturn').value) || 7) / 100;
+      const npsCorpus = parseFloat(document.getElementById('f_npsCorpus').value) || 0;
+      const epfBalance = parseFloat(document.getElementById('f_epfBalance').value) || 0;
+      const isTaxed = document.getElementById('f_taxToggle').checked;
+
+      expectedReturn = applyTax(expectedReturn, isTaxed);
+
+      const years = retireAge - currentAge;
+      const annualExp = monthlyExp * 12;
+      const inflatedAnnualExp = annualExp * Math.pow(1 + inflation, years);
+      const targetCorpus = inflatedAnnualExp / swr;
+
+      // Build year-by-year with step-up SIP
+      let corpus = currentCorpus;
+      let currentSIP = monthlySIP;
+      const data = [];
+      for (let y = 0; y <= years; y++) {
+        const age = currentAge + y;
+        const expAtAge = annualExp * Math.pow(1 + inflation, y);
+        data.push({ year: y, age, corpus, expAtAge, sip: currentSIP });
+        // Compound: corpus grows, then add SIP for the year (midpoint approximation)
+        corpus = corpus * (1 + expectedReturn) + currentSIP * 12 * (1 + expectedReturn / 2);
+        currentSIP = currentSIP * (1 + sipHike);
+      }
+      const projectedCorpus = data[data.length - 1].corpus;
+
+      // Math explanation
+      const mathHTML = `
+        <strong>How your FIRE number is calculated:</strong><br>
+        <code>Target Corpus = (Monthly Expenses × 12) × (1 + Inflation)^${years} ÷ SWR</code><br>
+        <code>= ${formatINR(annualExp)} × ${Math.pow(1 + inflation, years).toFixed(2)} ÷ ${(swr * 100).toFixed(2)}%</code><br>
+        <code>= ${formatINR(targetCorpus)}</code>
+        ${isTaxed ? '<br><em>Post-tax return applied: ' + (expectedReturn * 100).toFixed(2) + '%</em>' : ''}
+      `;
+      document.getElementById('f_mathBox').innerHTML = mathHTML;
+
+      document.getElementById('f_targetCorpus').textContent = formatINR(targetCorpus);
+      document.getElementById('f_projectedCorpus').textContent = formatINR(projectedCorpus);
+      document.getElementById('f_yearsToFire').textContent = years + ' yrs';
+
+      const shortfall = targetCorpus - projectedCorpus;
+      const statusEl = document.getElementById('f_fireStatus');
+      const statusBox = document.getElementById('f_statusBox');
+      if (projectedCorpus >= targetCorpus) {
+        statusEl.textContent = '🔥 Achieved!';
+        statusEl.style.color = '#138808';
+        statusBox.style.borderColor = '#138808';
+        statusBox.style.background = 'rgba(19,136,8,0.08)';
+      } else {
+        statusEl.textContent = 'Short by ' + formatINR(shortfall);
+        statusEl.style.color = '#D32F2F';
+        statusBox.style.borderColor = '#D32F2F';
+        statusBox.style.background = 'rgba(211,47,47,0.08)';
+      }
+
+      // Locked accounts
+      let lockedHTML = '';
+      if (npsCorpus > 0) {
+        const npsAccessible = Math.max(0, 60 - retireAge);
+        lockedHTML += `<div class="locked-note">🏛️ <strong>NPS:</strong> ${formatINR(npsCorpus)} locked until age 60 (${npsAccessible > 0 ? npsAccessible + ' years after FIRE' : 'already accessible'})</div>`;
+      }
+      if (epfBalance > 0) {
+        const epfAccessible = Math.max(0, 58 - retireAge);
+        lockedHTML += `<div class="locked-note">🏦 <strong>EPF:</strong> ${formatINR(epfBalance)} locked until age 58 (${epfAccessible > 0 ? epfAccessible + ' years after FIRE' : 'already accessible'})</div>`;
+      }
+      if (lockedHTML === '') lockedHTML = '<div class="locked-note">No locked retirement accounts added.</div>';
+      document.getElementById('f_lockedAccounts').innerHTML = lockedHTML;
+
+      // Milestones
+      let milestoneHTML = '';
+      const milestoneAges = [];
+      for (let a = currentAge + 5; a < retireAge; a += 5) milestoneAges.push(a);
+      if (milestoneAges.length === 0 || milestoneAges[milestoneAges.length - 1] < retireAge - 2) {
+        milestoneAges.push(retireAge);
+      }
+      milestoneAges.forEach(age => {
+        const idx = age - currentAge;
+        if (idx >= 0 && idx < data.length) {
+          const row = data[idx];
+          const targetAtAge = row.expAtAge / swr;
+          const pct = Math.min(100, Math.max(0, (row.corpus / targetAtAge) * 100));
+          const color = pct >= 100 ? '#138808' : (pct >= 70 ? '#F57C00' : '#D32F2F');
+          milestoneHTML += `
+            <div class="milestone-row">
+              <div class="milestone-age">Age ${age}</div>
+              <div class="milestone-bar"><div class="milestone-fill" style="width:${pct}%; background:${color};"></div></div>
+              <div class="milestone-amount">${formatINR(row.corpus)}</div>
+            </div>
+          `;
+        }
+      });
+      document.getElementById('f_milestones').innerHTML = milestoneHTML || '<div style="color:var(--text-secondary); font-size:0.85rem;">No milestones within range.</div>';
+
+      // Sensitivity Analysis
+      const sens = [];
+      // Return -2%
+      let sensCorpus = currentCorpus;
+      let sensSIP = monthlySIP;
+      for (let y = 0; y < years; y++) {
+        sensCorpus = sensCorpus * (1 + Math.max(0, expectedReturn - 0.02)) + sensSIP * 12 * (1 + Math.max(0, expectedReturn - 0.02) / 2);
+        sensSIP = sensSIP * (1 + sipHike);
+      }
+      sens.push({ label: 'If returns -2%', value: sensCorpus, diff: sensCorpus - projectedCorpus });
+      // Return +2%
+      sensCorpus = currentCorpus;
+      sensSIP = monthlySIP;
+      for (let y = 0; y < years; y++) {
+        sensCorpus = sensCorpus * (1 + expectedReturn + 0.02) + sensSIP * 12 * (1 + (expectedReturn + 0.02) / 2);
+        sensSIP = sensSIP * (1 + sipHike);
+      }
+      sens.push({ label: 'If returns +2%', value: sensCorpus, diff: sensCorpus - projectedCorpus });
+      // Delay 2 years
+      sensCorpus = currentCorpus;
+      sensSIP = monthlySIP;
+      for (let y = 0; y < years + 2; y++) {
+        sensCorpus = sensCorpus * (1 + expectedReturn) + sensSIP * 12 * (1 + expectedReturn / 2);
+        sensSIP = sensSIP * (1 + sipHike);
+      }
+      const delayedTarget = annualExp * Math.pow(1 + inflation, years + 2) / swr;
+      sens.push({ label: 'Delay 2 years', value: sensCorpus, diff: sensCorpus - delayedTarget });
+      // SIP +10%
+      sensCorpus = currentCorpus;
+      sensSIP = monthlySIP * 1.1;
+      for (let y = 0; y < years; y++) {
+        sensCorpus = sensCorpus * (1 + expectedReturn) + sensSIP * 12 * (1 + expectedReturn / 2);
+        sensSIP = sensSIP * (1 + sipHike);
+      }
+      sens.push({ label: 'SIP +10%', value: sensCorpus, diff: sensCorpus - targetCorpus });
+
+      let sensHTML = '';
+      sens.forEach(s => {
+        const color = s.diff >= 0 ? 'var(--accent-green)' : 'var(--danger)';
+        sensHTML += `
+          <div class="sensitivity-item">
+            <div class="sensitivity-label">${s.label}</div>
+            <div class="sensitivity-value">${formatINR(s.value)}</div>
+            <div style="font-size:0.75rem; color:${color}; margin-top:2px;">${s.diff >= 0 ? '+' : ''}${formatINR(s.diff)} vs target</div>
+          </div>
+        `;
+      });
+      document.getElementById('f_sensitivity').innerHTML = sensHTML;
+
+      // Table
+      let tableHTML = '<table><thead><tr><th>Age</th><th>Annual SIP</th><th>Corpus</th><th>Annual Exp</th><th>Gap</th></tr></thead><tbody>';
+      data.forEach((row) => {
+        const targetAtAge = row.expAtAge / swr;
+        const gap = row.corpus - targetAtAge;
+        const gapClass = gap >= 0 ? 'positive' : 'negative';
+        tableHTML += '<tr><td>' + row.age + '</td><td style="color:var(--text-secondary)">' + formatINR(row.sip * 12) + '</td><td>' + formatINR(row.corpus) + '</td><td style="color:var(--text-secondary)">' + formatINR(row.expAtAge) + '</td><td class="' + gapClass + '">' + (gap >= 0 ? '+' : '') + formatINR(gap) + '</td></tr>';
+      });
+      tableHTML += '</tbody></table>';
+      document.getElementById('f_projectionTable').innerHTML = tableHTML;
+
+      // Chart
+      drawChart('f_chartSvg', data, targetCorpus, swr);
+
+      // Post-retirement simulation
+      let postHTML = '<table class="post-retire-table"><thead><tr><th>Year</th><th>Age</th><th>Opening</th><th>Withdrawal</th><th>Closing</th><th>Status</th></tr></thead><tbody>';
+      let postCorpus = projectedCorpus;
+      let postExp = inflatedAnnualExp;
+      let depleted = false;
+      for (let yr = 1; yr <= 30; yr++) {
+        if (depleted) break;
+        const age = retireAge + yr;
+        const opening = postCorpus;
+        postExp = postExp * (1 + inflation);
+        const withdrawal = postExp;
+        postCorpus = (postCorpus - withdrawal) * (1 + postReturn);
+        const status = postCorpus > 0 ? '<span class="positive">✓ Sustainable</span>' : '<span class="negative">✗ Depleted</span>';
+        if (postCorpus <= 0) depleted = true;
+        postHTML += '<tr><td>' + yr + '</td><td>' + age + '</td><td>' + formatINR(opening) + '</td><td>' + formatINR(withdrawal) + '</td><td>' + formatINR(Math.max(0, postCorpus)) + '</td><td>' + status + '</td></tr>';
+      }
+      postHTML += '</tbody></table>';
+      if (depleted) {
+        postHTML += '<div style="margin-top:8px; font-size:0.8rem; color:var(--danger);">⚠️ Corpus depletes before 30 years. Consider increasing SIP or delaying retirement.</div>';
+      } else {
+        postHTML += '<div style="margin-top:8px; font-size:0.8rem; color:var(--accent-green);">✅ Corpus sustains 30+ years of retirement!</div>';
+      }
+      document.getElementById('f_postRetireTable').innerHTML = postHTML;
+
+      document.getElementById('f_results').style.display = 'block';
+
+      lastForwardResults = {
+        currentAge, retireAge, targetCorpus, projectedCorpus, years, monthlyExp,
+        monthlySIP, sipHike, expectedReturn, inflation, swr, isTaxed
+      };
+    }
+
+    // ===================== REVERSE CALCULATOR =====================
+    function calculateReverse() {
+      const currentAge = parseInt(document.getElementById('r_currentAge').value) || 28;
+      const retireAge = parseInt(document.getElementById('r_retireAge').value) || 45;
+      const monthlyExp = parseFloat(document.getElementById('r_monthlyExp').value) || 75000;
+      const currentCorpus = parseFloat(document.getElementById('r_currentCorpus').value) || 1500000;
+      const expectedReturn = (parseFloat(document.getElementById('r_expectedReturn').value) || 12) / 100;
+      const inflation = (parseFloat(document.getElementById('r_inflation').value) || 6) / 100;
+      const swr = (parseFloat(document.getElementById('r_swr').value) || 4) / 100;
+      const sipHike = (parseFloat(document.getElementById('r_sipHike').value) || 0) / 100;
+
+      const years = retireAge - currentAge;
+      const annualExp = monthlyExp * 12;
+      const targetCorpus = annualExp * Math.pow(1 + inflation, years) / swr;
+
+      // Binary search for required SIP
+      let low = 1000, high = 5000000, requiredSIP = 0;
+      for (let iter = 0; iter < 50; iter++) {
+        const mid = (low + high) / 2;
+        let corpus = currentCorpus;
+        let sip = mid;
+        for (let y = 0; y < years; y++) {
+          corpus = corpus * (1 + expectedReturn) + sip * 12 * (1 + expectedReturn / 2);
+          sip = sip * (1 + sipHike);
+        }
+        if (corpus >= targetCorpus) {
+          requiredSIP = mid;
+          high = mid;
+        } else {
+          low = mid;
+        }
+      }
+
+      // Calculate totals with required SIP
+      let corpus = currentCorpus;
+      let sip = requiredSIP;
+      let totalInvested = currentCorpus;
+      const data = [];
+      for (let y = 0; y <= years; y++) {
+        const age = currentAge + y;
+        const expAtAge = annualExp * Math.pow(1 + inflation, y);
+        data.push({ age, corpus, sip: Math.round(sip), expAtAge });
+        totalInvested += sip * 12;
+        corpus = corpus * (1 + expectedReturn) + sip * 12 * (1 + expectedReturn / 2);
+        sip = sip * (1 + sipHike);
+      }
+
+      document.getElementById('r_targetCorpus').textContent = formatINR(targetCorpus);
+      document.getElementById('r_requiredSIP').textContent = formatINR(requiredSIP) + '/mo';
+      document.getElementById('r_totalInvested').textContent = formatINR(totalInvested);
+      document.getElementById('r_wealthGained').textContent = formatINR(targetCorpus - totalInvested);
+
+      let tableHTML = '<table><thead><tr><th>Age</th><th>Monthly SIP</th><th>Corpus</th><th>Target at Age</th><th>Gap</th></tr></thead><tbody>';
+      data.forEach((row) => {
+        const targetAtAge = row.expAtAge / swr;
+        const gap = row.corpus - targetAtAge;
+        const gapClass = gap >= 0 ? 'positive' : 'negative';
+        tableHTML += '<tr><td>' + row.age + '</td><td style="color:var(--text-secondary)">' + formatINR(row.sip) + '</td><td>' + formatINR(row.corpus) + '</td><td style="color:var(--text-secondary)">' + formatINR(targetAtAge) + '</td><td class="' + gapClass + '">' + (gap >= 0 ? '+' : '') + formatINR(gap) + '</td></tr>';
+      });
+      tableHTML += '</tbody></table>';
+      document.getElementById('r_projectionTable').innerHTML = tableHTML;
+
+      document.getElementById('r_results').style.display = 'block';
+    }
+
+    // ===================== CHART =====================
+    function drawChart(svgId, data, targetCorpus, swr) {
+      const svg = document.getElementById(svgId);
+      const w = svg.clientWidth || 640;
+      const h = 240;
+      const pad = { top: 10, right: 10, bottom: 30, left: 70 };
+      const cw = w - pad.left - pad.right;
+      const ch = h - pad.top - pad.bottom;
+
+      const maxVal = Math.max(targetCorpus, ...data.map(d => d.corpus));
+      const minVal = 0;
+
+      const xScale = i => pad.left + (i / (data.length - 1)) * cw;
+      const yScale = v => pad.top + ch - ((v - minVal) / (maxVal - minVal)) * ch;
+
+      let pathD = 'M' + xScale(0) + ',' + yScale(data[0].corpus);
+      data.slice(1).forEach((d, i) => {
+        pathD += ' L' + xScale(i + 1) + ',' + yScale(d.corpus);
+      });
+
+      let targetD = '';
+      data.forEach((d, i) => {
+        const ty = yScale(d.expAtAge / swr);
+        targetD += (i === 0 ? 'M' : ' L') + xScale(i) + ',' + ty;
+      });
+
+      let svgHTML = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" xmlns="http://www.w3.org/2000/svg">';
+      svgHTML += '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF9933" stop-opacity="0.25"/><stop offset="100%" stop-color="#FF9933" stop-opacity="0.02"/></linearGradient></defs>';
+
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (ch / 4) * i;
+        const val = maxVal - (maxVal / 4) * i;
+        svgHTML += '<line x1="' + pad.left + '" y1="' + y + '" x2="' + (w - pad.right) + '" y2="' + y + '" stroke="var(--border)" stroke-dasharray="3,3" stroke-width="1"/>';
+        svgHTML += '<text x="' + (pad.left - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="var(--text-secondary)">' + formatINR(val) + '</text>';
+      }
+
+      let areaD = pathD + ' L' + xScale(data.length - 1) + ',' + (pad.top + ch) + ' L' + xScale(0) + ',' + (pad.top + ch) + ' Z';
+      svgHTML += '<path d="' + areaD + '" fill="url(#areaGrad)"/>';
+      svgHTML += '<path d="' + targetD + '" fill="none" stroke="#138808" stroke-width="2" stroke-dasharray="6,4"/>';
+      svgHTML += '<path d="' + pathD + '" fill="none" stroke="#FF9933" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+
+      const step = Math.ceil(data.length / 6);
+      data.forEach((d, i) => {
+        if (i % step === 0 || i === data.length - 1) {
+          svgHTML += '<text x="' + xScale(i) + '" y="' + (h - 8) + '" text-anchor="middle" font-size="10" fill="var(--text-secondary)">' + d.age + '</text>';
+        }
+      });
+
+      svgHTML += '<g transform="translate(' + (w - 180) + ', 10)">';
+      svgHTML += '<rect x="0" y="0" width="10" height="10" fill="#FF9933" rx="2"/>';
+      svgHTML += '<text x="16" y="9" font-size="10" fill="var(--text-secondary)">Projected Corpus</text>';
+      svgHTML += '<rect x="0" y="18" width="10" height="10" fill="#138808" rx="2"/>';
+      svgHTML += '<text x="16" y="27" font-size="10" fill="var(--text-secondary)">Target Corpus</text>';
+      svgHTML += '</g></svg>';
+
+      svg.innerHTML = svgHTML;
+    }
+
+    // ===================== SHARE =====================
+    function copyResults() {
+      if (!lastForwardResults) return;
+      const r = lastForwardResults;
+      const text = `🇮🇳 My FIRE Plan
+` +
+        `Age: ${r.currentAge} → ${r.retireAge} (${r.years} years)
+` +
+        `Monthly Expenses: ${formatINR(r.monthlyExp)}
+` +
+        `Target Corpus: ${formatINR(r.targetCorpus)}
+` +
+        `Projected Corpus: ${formatINR(r.projectedCorpus)}
+` +
+        `Monthly SIP: ${formatINR(r.monthlySIP)} (hiking ${(r.sipHike * 100).toFixed(0)}%/yr)
+` +
+        `Expected Return: ${(r.expectedReturn * 100).toFixed(2)}%${r.isTaxed ? ' (post-tax)' : ''}
+` +
+        `Inflation: ${(r.inflation * 100).toFixed(1)}% | SWR: ${(r.swr * 100).toFixed(2)}%
+` +
+        `Status: ${r.projectedCorpus >= r.targetCorpus ? '🔥 FIRE Achieved!' : 'Need more savings 💪'}`;
+      navigator.clipboard.writeText(text).then(() => alert('Results copied to clipboard!'));
+    }
+
+    function shareWhatsApp() {
+      if (!lastForwardResults) return;
+      const r = lastForwardResults;
+      const text = encodeURIComponent(
+        `🇮🇳 My FIRE Plan — Target: ${formatINR(r.targetCorpus)}, Projected: ${formatINR(r.projectedCorpus)}. ` +
+        `${r.projectedCorpus >= r.targetCorpus ? '🔥 FIRE Achieved!' : 'Need more savings 💪'}`
+      );
+      window.open('https://wa.me/?text=' + text, '_blank');
+    }
+
+    // Auto-calculate on load
+    window.addEventListener('load', () => setTimeout(calculateForward, 300));
+    window.addEventListener('resize', () => {
+      if (document.getElementById('f_results').style.display === 'block') {
+        const monthlyExp = parseFloat(document.getElementById('f_monthlyExp').value) || 75000;
+        const swr = (parseFloat(document.getElementById('f_swr').value) || 4) / 100;
+        // Rebuild data for chart redraw
+        calculateForward();
+      }
+    });
+  </script>
+</body>
+</html>

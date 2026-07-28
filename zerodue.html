@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>ZeroDue — Credit Card Bill Reminder</title>
+    <meta name="theme-color" content="#0b1220">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ZeroDue">
+    <style>
+        :root {
+            --bg: #0b1220;
+            --panel: #121c31;
+            --panel2: #0e1728;
+            --text: #e9effc;
+            --muted: #8ea1c4;
+            --accent: #4f8cff;
+            --good: #22c55e;
+            --warn: #f59e0b;
+            --bad: #ef4444;
+            --line: #22304f;
+            --r: 16px;
+        }
+
+        @media (prefers-color-scheme:light) {
+            :root {
+                --bg: #eef2fa;
+                --panel: #fff;
+                --panel2: #f6f8fd;
+                --text: #0f172a;
+                --muted: #5c6c8d;
+                --line: #e2e8f6;
+            }
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 16px;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--line)
+        }
+
+        header h1 {
+            font-size: 18px;
+            margin: 0;
+            flex: 1
+        }
+
+        .iconbtn {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 15px;
+            cursor: pointer
+        }
+
+        main {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 16px 16px 110px
+        }
+
+        .banner {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: linear-gradient(135deg, #4f8cff22, #4f8cff11);
+            border: 1px solid #4f8cff55;
+            padding: 12px 14px;
+            border-radius: var(--r);
+            margin-bottom: 14px;
+            font-size: 14px
+        }
+
+        .banner button {
+            margin-left: auto
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .stat {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 12px 14px
+        }
+
+        .stat b {
+            display: block;
+            font-size: 20px;
+            margin-top: 2px
+        }
+
+        .stat span {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 14px
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--c, #4f8cff);
+            border-radius: var(--r);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .card h3 {
+            margin: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .card h3 small {
+            color: var(--muted);
+            font-weight: 500
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .pill {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap
+        }
+
+        .pill.open {
+            background: #4f8cff22;
+            color: #7aa8ff
+        }
+
+        .pill.soon {
+            background: #f59e0b22;
+            color: #fbbf24
+        }
+
+        .pill.overdue {
+            background: #ef444422;
+            color: #f87171
+        }
+
+        .pill.paid {
+            background: #22c55e22;
+            color: #4ade80
+        }
+
+        .amount {
+            font-size: 22px;
+            font-weight: 700
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            align-items: center
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 600;
+            background: var(--accent);
+            color: #fff
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--text)
+        }
+
+        .btn.danger {
+            background: transparent;
+            border: 1px solid #ef444466;
+            color: #f87171
+        }
+
+        .btn.sm {
+            padding: 7px 10px;
+            font-size: 13px;
+            border-radius: 10px
+        }
+
+        #fab {
+            position: fixed;
+            right: 18px;
+            bottom: calc(18px + env(safe-area-inset-bottom));
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: 0;
+            background: var(--accent);
+            color: #fff;
+            font-size: 30px;
+            line-height: 1;
+            box-shadow: 0 8px 24px #0006;
+            z-index: 6
+        }
+
+        dialog {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 18px;
+            padding: 0;
+            width: min(440px, 92vw)
+        }
+
+        dialog::backdrop {
+            background: #0009;
+            backdrop-filter: blur(2px)
+        }
+
+        dialog form,
+        dialog .body {
+            padding: 18px
+        }
+
+        dialog h2 {
+            margin: 0 0 6px;
+            font-size: 17px
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin: 12px 0 4px;
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            background: var(--panel2);
+            color: var(--text);
+            font: inherit
+        }
+
+        input[type=color] {
+            padding: 4px;
+            height: 42px
+        }
+
+        .frow {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .dactions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 16px;
+            flex-wrap: wrap
+        }
+
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translate(-50%, 80px);
+            background: #111827;
+            color: #fff;
+            border: 1px solid #ffffff22;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            opacity: 0;
+            transition: .25s;
+            z-index: 50;
+            max-width: 90vw;
+            text-align: center;
+            pointer-events: none
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0)
+        }
+
+        .empty {
+            grid-column: 1/-1;
+            text-align: center;
+            color: var(--muted);
+            padding: 50px 20px;
+            border: 1px dashed var(--line);
+            border-radius: var(--r)
+        }
+
+        .hr {
+            height: 1px;
+            background: var(--line);
+            margin: 14px -18px
+        }
+
+        .small {
+            font-size: 12.5px;
+            color: var(--muted);
+            line-height: 1.55
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>💳 ZeroDue</h1>
+        <button class="iconbtn" id="bellBtn" title="Notifications">🔕</button>
+        <button class="iconbtn" id="settingsBtn" title="Settings">⚙️</button>
+    </header>
+    <main>
+        <div class="banner" id="permBanner" hidden>
+            <span>🔔 Enable notifications to get daily bill reminders.</span>
+            <button class="btn sm" id="enableNotif">Enable</button>
+        </div>
+        <section class="summary" id="summary"></section>
+        <section class="grid" id="cards"></section>
+    </main>
+    <button id="fab" title="Add card">+</button>
+
+    <dialog id="cardDialog">
+        <form id="cardForm" autocomplete="off">
+            <h2 id="cardFormTitle">Add card</h2>
+            <label for="f_name">Card name</label>
+            <input id="f_name" required maxlength="40" placeholder="e.g. HDFC Regalia">
+            <div class="frow">
+                <div><label for="f_last4">Last 4 digits (optional)</label><input id="f_last4" inputmode="numeric"
+                        pattern="\d{0,4}" maxlength="4" placeholder="1234"></div>
+                <div><label for="f_amount">Bill amount (optional)</label><input id="f_amount" type="number" min="0"
+                        step="any" placeholder="0"></div>
+            </div>
+            <div class="frow">
+                <div><label for="f_gen">Bill generation day</label><input id="f_gen" type="number" min="1" max="31"
+                        required placeholder="e.g. 1"></div>
+                <div><label for="f_due">Payment due day</label><input id="f_due" type="number" min="1" max="31" required
+                        placeholder="e.g. 20"></div>
+            </div>
+            <label for="f_color">Card color</label>
+            <input id="f_color" type="color" value="#4f8cff">
+            <p class="small">If the due day falls in the following month (e.g. generated on the 25th, due on the 12th),
+                it's handled automatically. Reminders run daily from the generation date until you mark the bill paid —
+                including overdue.</p>
+            <div class="dactions">
+                <button type="button" class="btn ghost" id="cancelCard">Cancel</button>
+                <button class="btn" id="saveCard">Save card</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="settingsDialog">
+        <div class="body">
+            <h2>Settings</h2>
+            <label for="s_time">Daily reminder time</label>
+            <input id="s_time" type="time">
+            <label for="s_cur">Currency symbol</label>
+            <input id="s_cur" maxlength="3">
+            <div class="dactions" style="justify-content:flex-start">
+                <button class="btn ghost sm" id="testNotif">Send test notification</button>
+                <button class="btn ghost sm" id="installBtn" hidden>⬇ Install app</button>
+            </div>
+            <div class="hr"></div>
+            <div class="dactions" style="justify-content:flex-start;margin-top:0">
+                <button class="btn ghost sm" id="exportBtn">⬇ Export backup</button>
+                <button class="btn ghost sm" id="importBtn">⬆ Import backup</button>
+                <input type="file" id="importFile" accept="application/json" hidden>
+            </div>
+            <div class="hr"></div>
+            <p class="small"><b>How reminders work:</b> once a day, after your chosen time, the app notifies you about
+                every unpaid bill. The check runs while the app is open and every time you open it — so install it to
+                your home screen and open it once a day. For reminders when the app is fully closed, see the
+                <code>sw.js</code> note at the bottom of this file's source.</p>
+            <div class="dactions">
+                <button type="button" class="btn ghost" id="closeSettings">Close</button>
+                <button class="btn" id="saveSettings">Save</button>
+            </div>
+        </div>
+    </dialog>
+
+    <div id="toast"></div>
+
+    <script>
+        'use strict';
+        /* ================= helpers ================= */
+        const $ = s => document.querySelector(s);
+        const DAY = 86400000;
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const d0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const dim = (y, m) => new Date(y, m + 1, 0).getDate();
+        const clampDay = (y, m, d) => Math.min(d, dim(y, m));
+        const daysBetween = (a, b) => Math.round((d0(b) - d0(a)) / DAY);
+        const fmt = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+        const fmtY = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+        const localStr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+
+        /* ================= icon + manifest (embedded PWA) ================= */
+        const ICON_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='#4f8cff'/><rect x='72' y='148' width='368' height='216' rx='28' fill='#ffffff'/><rect x='72' y='196' width='368' height='44' fill='#0b1220'/><rect x='104' y='292' width='150' height='30' rx='10' fill='#a8bfe8'/></svg>`;
+        const ICON_URI = 'data:image/svg+xml,' + encodeURIComponent(ICON_SVG);
+        try {
+            const manifest = {
+                name: 'ZeroDue — Credit Card Bill Reminder', short_name: 'ZeroDue',
+                start_url: location.href, display: 'standalone',
+                background_color: '#0b1220', theme_color: '#0b1220',
+                icons: [{ src: ICON_URI, sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
+            };
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' }));
+            document.head.appendChild(link);
+        } catch (e) { }
+
+        /* ================= state ================= */
+        const LS_KEY = 'zerodue.v1';
+        // one-time migration from the old "CardDue" storage key
+        try {
+            const old = localStorage.getItem('carddue.v1');
+            if (old && !localStorage.getItem(LS_KEY)) {
+                localStorage.setItem(LS_KEY, old);
+                localStorage.removeItem('carddue.v1');
+            }
+        } catch (e) { }
+        let state = null;
+        try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) { }
+        state ||= { cards: [], settings: { reminderTime: '09:00', currency: '₹' }, lastNotified: {} };
+        state.settings ||= { reminderTime: '09:00', currency: '₹' };
+        state.lastNotified ||= {};
+        const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { } };
+
+        /* ================= billing-cycle logic ================= */
+        // Current cycle = most recent generation date <= today; due date is the
+        // dueDay of the same month (if dueDay > genDay) or of the next month.
+        function currentCycle(card, today) {
+            const t = d0(today);
+            let gen = new Date(t.getFullYear(), t.getMonth(), clampDay(t.getFullYear(), t.getMonth(), card.genDay));
+            if (t < gen) {
+                const pm = new Date(t.getFullYear(), t.getMonth() - 1, 1);
+                gen = new Date(pm.getFullYear(), pm.getMonth(), clampDay(pm.getFullYear(), pm.getMonth(), card.genDay));
+            }
+            let due;
+            if (card.dueDay > card.genDay) {
+                due = new Date(gen.getFullYear(), gen.getMonth(), clampDay(gen.getFullYear(), gen.getMonth(), card.dueDay));
+            } else {
+                const nm = new Date(gen.getFullYear(), gen.getMonth() + 1, 1);
+                due = new Date(nm.getFullYear(), nm.getMonth(), clampDay(nm.getFullYear(), nm.getMonth(), card.dueDay));
+            }
+            return { key: gen.getFullYear() + '-' + String(gen.getMonth() + 1).padStart(2, '0'), gen, due };
+        }
+        function ensureCycle(card, today) {
+            card.cycles ||= {};
+            const c = currentCycle(card, today);
+            if (!card.cycles[c.key]) {
+                card.cycles[c.key] = { gen: c.gen.toISOString(), due: c.due.toISOString(), paidOn: null, amount: card.amount ?? null };
+            }
+            return c.key;
+        }
+        function unpaidCycles(card) {
+            return Object.entries(card.cycles || {})
+                .filter(([, c]) => !c.paidOn)
+                .map(([key, c]) => ({ key, ...c, genDate: new Date(c.gen), dueDate: new Date(c.due) }))
+                .sort((a, b) => a.dueDate - b.dueDate);
+        }
+
+        /* ================= notifications ================= */
+        let swReg = null;
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            navigator.serviceWorker.register('sw.js').then(async r => {
+                swReg = r;
+                try { if ('periodicSync' in r) await r.periodicSync.register('zerodue-daily', { minInterval: 12 * 60 * 60 * 1000 }); } catch (e) { }
+            }).catch(() => { /* optional sw.js not present — single-file mode */ });
+            navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'daily-check') dailyCheck(); });
+        }
+        const notifPerm = () => ('Notification' in window) ? Notification.permission : 'unsupported';
+        async function askPermission() {
+            if (!('Notification' in window)) return toast('This browser does not support notifications');
+            const p = await Notification.requestPermission();
+            renderBanner();
+            if (p === 'granted') { toast('Notifications enabled 🎉'); dailyCheck(); }
+            else if (p === 'denied') toast('Notifications blocked — enable them in browser settings');
+        }
+        async function notify(title, body, tag) {
+            try {
+                if (swReg) { await swReg.showNotification(title, { body, tag, icon: ICON_URI, badge: ICON_URI }); return; }
+                if (notifPerm() === 'granted') { new Notification(title, { body, tag, icon: ICON_URI }); return; }
+            } catch (e) { }
+            toast(title + (body ? ' — ' + body : ''), 6000); // fallback: in-app toast
+        }
+        function dailyCheck() {
+            const now = new Date();
+            const [rh, rm] = (state.settings.reminderTime || '09:00').split(':').map(Number);
+            if (now.getHours() < rh || (now.getHours() === rh && now.getMinutes() < rm)) return; // not time yet
+            const tstr = localStr(now);
+            state.cards.forEach(card => {
+                ensureCycle(card, now);
+                const unpaid = unpaidCycles(card);
+                if (!unpaid.length) return;
+                if (state.lastNotified[card.id] === tstr) return; // already reminded today
+                const c = unpaid[0];
+                const dl = daysBetween(now, c.dueDate);
+                const amt = (c.amount ?? card.amount) != null ? ` • ${state.settings.currency}${Number(c.amount ?? card.amount).toLocaleString()}` : '';
+                let title;
+                if (dl > 0) title = `${card.name}: due in ${dl} day${dl === 1 ? '' : 's'}`;
+                else if (dl === 0) title = `${card.name}: due TODAY`;
+                else title = `${card.name}: OVERDUE by ${-dl} day${dl === -1 ? '' : 's'}`;
+                notify(title, `Due ${fmtY(c.dueDate)}${amt}${unpaid.length > 1 ? ` • ${unpaid.length} unpaid bills` : ''}`, 'card-' + card.id);
+                state.lastNotified[card.id] = tstr;
+            });
+            save();
+        }
+        let timer = null;
+        function scheduleDaily() {
+            clearTimeout(timer);
+            const [rh, rm] = (state.settings.reminderTime || '09:00').split(':').map(Number);
+            const now = new Date();
+            let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), rh, rm, 0);
+            if (next <= now) { dailyCheck(); next.setDate(next.getDate() + 1); }
+            timer = setTimeout(() => { dailyCheck(); refresh(); scheduleDaily(); }, next - now);
+        }
+        function updateBadge() {
+            try {
+                const n = state.cards.reduce((a, c) => a + unpaidCycles(c).length, 0);
+                if ('setAppBadge' in navigator) n ? navigator.setAppBadge(n) : navigator.clearAppBadge();
+            } catch (e) { }
+        }
+
+        /* ================= rendering ================= */
+        function renderSummary(today) {
+            let unpaid = 0, overdue = 0, total = 0, next = null;
+            state.cards.forEach(c => unpaidCycles(c).forEach(u => {
+                unpaid++; total += +(u.amount ?? c.amount ?? 0);
+                if (daysBetween(today, u.dueDate) < 0) overdue++;
+                if (!next || u.dueDate < next.due) next = { due: u.dueDate, name: c.name };
+            }));
+            $('#summary').innerHTML = `
+    <div class="stat"><span>Unpaid bills</span><b>${unpaid}</b></div>
+    <div class="stat"><span>Overdue</span><b style="color:${overdue ? 'var(--bad)' : 'inherit'}">${overdue}</b></div>
+    <div class="stat"><span>Outstanding</span><b>${esc(state.settings.currency)}${total.toLocaleString()}</b></div>
+    <div class="stat"><span>Next due</span><b>${next ? fmt(next.due) : '—'}</b>${next ? `<div class="muted" style="font-size:12px">${esc(next.name)}</div>` : ''}</div>`;
+        }
+        function cardHTML(card, today) {
+            const unpaid = unpaidCycles(card);
+            const cur = currentCycle(card, today);
+            const cyc = card.cycles[cur.key];
+            let pill, pillCls, dueLine, btn, amountHTML = '';
+            if (unpaid.length) {
+                const u = unpaid[0];
+                const dl = daysBetween(today, u.dueDate);
+                if (dl < 0) { pill = `Overdue ${-dl}d`; pillCls = 'overdue'; }
+                else if (dl === 0) { pill = 'Due today'; pillCls = 'soon'; }
+                else { pill = `${dl} day${dl === 1 ? '' : 's'} left`; pillCls = dl <= 3 ? 'soon' : 'open'; }
+                dueLine = `Bill ${fmt(u.genDate)} → due <b>${fmtY(u.dueDate)}</b>` +
+                    (unpaid.length > 1 ? ` · <span style="color:var(--bad)">${unpaid.length} unpaid bills</span>` : '');
+                const amt = u.amount ?? card.amount;
+                if (amt != null) amountHTML = `<div class="amount">${esc(state.settings.currency)}${Number(amt).toLocaleString()}</div>`;
+                btn = `<button class="btn sm" data-act="paid" data-id="${card.id}">Mark as paid</button>`;
+            } else {
+                pill = 'Paid ✓'; pillCls = 'paid';
+                const paidOn = cyc.paidOn ? new Date(cyc.paidOn) : null;
+                const nm = new Date(cur.gen.getFullYear(), cur.gen.getMonth() + 1, 1);
+                const nextGen = new Date(nm.getFullYear(), nm.getMonth(), clampDay(nm.getFullYear(), nm.getMonth(), card.genDay));
+                dueLine = `${fmt(new Date(cyc.gen))} bill paid${paidOn ? ' on ' + fmtY(paidOn) : ''} · next bill ${fmt(nextGen)}`;
+                const amt = cyc.amount ?? card.amount;
+                if (amt != null) amountHTML = `<div class="amount" style="color:var(--muted);text-decoration:line-through">${esc(state.settings.currency)}${Number(amt).toLocaleString()}</div>`;
+                btn = `<button class="btn ghost sm" data-act="undo" data-id="${card.id}">Undo</button>`;
+            }
+            return `<article class="card" style="--c:${esc(card.color || '#4f8cff')}">
+    <div class="row">
+      <h3>${esc(card.name)} ${card.last4 ? `<small>•• ${esc(card.last4)}</small>` : ''}</h3>
+      <span class="pill ${pillCls}">${pill}</span>
+    </div>
+    ${amountHTML}
+    <div class="muted">${dueLine}</div>
+    <div class="actions">${btn}<span style="flex:1"></span>
+      <button class="btn ghost sm" data-act="edit" data-id="${card.id}">Edit</button>
+      <button class="btn danger sm" data-act="del" data-id="${card.id}" title="Delete">✕</button>
+    </div>
+  </article>`;
+        }
+        function render() {
+            const today = new Date();
+            state.cards.forEach(c => ensureCycle(c, today));
+            renderSummary(today);
+            const wrap = $('#cards');
+            if (!state.cards.length) {
+                wrap.innerHTML = `<div class="empty">No cards yet.<br>Tap <b>+</b> to add your first credit card.</div>`;
+                return;
+            }
+            const sorted = [...state.cards].sort((a, b) => {
+                const ua = unpaidCycles(a)[0], ub = unpaidCycles(b)[0];
+                if (ua && ub) return ua.dueDate - ub.dueDate;
+                return ua ? -1 : ub ? 1 : 0;
+            });
+            wrap.innerHTML = sorted.map(c => cardHTML(c, today)).join('');
+        }
+        function refresh() { save(); render(); updateBadge(); }
+        function renderBanner() {
+            const p = notifPerm();
+            $('#permBanner').hidden = p !== 'default';
+            $('#bellBtn').textContent = p === 'granted' ? '🔔' : '🔕';
+        }
+        let toastTimer;
+        function toast(msg, ms = 3500) {
+            const t = $('#toast');
+            t.textContent = msg; t.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+        }
+
+        /* ================= actions ================= */
+        function markPaid(card) {
+            const u = unpaidCycles(card)[0];
+            if (!u) return;
+            card.cycles[u.key].paidOn = new Date().toISOString();
+            refresh();
+            toast(`✅ ${card.name} bill (due ${fmt(u.dueDate)}) marked paid`);
+        }
+        let editingId = null;
+        function openCardForm(card) {
+            editingId = card ? card.id : null;
+            $('#cardFormTitle').textContent = card ? 'Edit card' : 'Add card';
+            $('#f_name').value = card?.name ?? '';
+            $('#f_last4').value = card?.last4 ?? '';
+            $('#f_amount').value = card?.amount ?? '';
+            $('#f_gen').value = card?.genDay ?? '';
+            $('#f_due').value = card?.dueDay ?? '';
+            $('#f_color').value = card?.color || '#4f8cff';
+            $('#cardDialog').showModal();
+        }
+        $('#fab').onclick = () => openCardForm();
+        $('#cancelCard').onclick = () => $('#cardDialog').close();
+        $('#cardForm').onsubmit = e => {
+            e.preventDefault();
+            const data = {
+                name: $('#f_name').value.trim(),
+                last4: $('#f_last4').value.trim(),
+                amount: $('#f_amount').value !== '' ? +$('#f_amount').value : null,
+                genDay: +$('#f_gen').value,
+                dueDay: +$('#f_due').value,
+                color: $('#f_color').value || '#4f8cff'
+            };
+            if (!data.name || !data.genDay || !data.dueDay) return;
+            if (editingId) Object.assign(state.cards.find(c => c.id === editingId), data);
+            else state.cards.push({ id: uid(), cycles: {}, ...data });
+            $('#cardDialog').close();
+            refresh(); scheduleDaily();
+            if (notifPerm() === 'default') askPermission();
+        };
+        $('#cards').addEventListener('click', e => {
+            const b = e.target.closest('button[data-act]');
+            if (!b) return;
+            const card = state.cards.find(c => c.id === b.dataset.id);
+            if (!card) return;
+            if (b.dataset.act === 'paid') markPaid(card);
+            else if (b.dataset.act === 'undo') {
+                const k = currentCycle(card, new Date()).key;
+                if (card.cycles[k]) { card.cycles[k].paidOn = null; refresh(); }
+            }
+            else if (b.dataset.act === 'edit') openCardForm(card);
+            else if (b.dataset.act === 'del' && confirm(`Delete "${card.name}" and its history?`)) {
+                state.cards = state.cards.filter(x => x.id !== card.id); refresh();
+            }
+        });
+
+        /* ================= settings, backup, install ================= */
+        $('#settingsBtn').onclick = () => {
+            $('#s_time').value = state.settings.reminderTime;
+            $('#s_cur').value = state.settings.currency;
+            $('#settingsDialog').showModal();
+        };
+        $('#closeSettings').onclick = () => $('#settingsDialog').close();
+        $('#saveSettings').onclick = () => {
+            state.settings.reminderTime = $('#s_time').value || '09:00';
+            state.settings.currency = $('#s_cur').value || '₹';
+            $('#settingsDialog').close(); refresh(); scheduleDaily();
+        };
+        $('#testNotif').onclick = () => notify('ZeroDue test 🎉', 'Notifications are working! You will get daily bill reminders.', 'test');
+        $('#enableNotif').onclick = askPermission;
+        $('#bellBtn').onclick = () => {
+            const p = notifPerm();
+            if (p === 'default') askPermission();
+            else toast(p === 'granted' ? 'Notifications are on 🔔' : 'Notifications are blocked — enable them in your browser site settings');
+        };
+        $('#exportBtn').onclick = () => {
+            const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'zerodue-backup-' + localStr(new Date()) + '.json';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        };
+        $('#importBtn').onclick = () => $('#importFile').click();
+        $('#importFile').onchange = e => {
+            const f = e.target.files[0]; if (!f) return;
+            const r = new FileReader();
+            r.onload = () => {
+                try {
+                    const data = JSON.parse(r.result);
+                    if (!data || !Array.isArray(data.cards)) throw 0;
+                    state = data;
+                    state.settings ||= { reminderTime: '09:00', currency: '₹' };
+                    state.lastNotified ||= {};
+                    refresh(); scheduleDaily(); toast('Backup imported ✔');
+                } catch { toast('Invalid backup file'); }
+            };
+            r.readAsText(f); e.target.value = '';
+        };
+        let deferredPrompt = null;
+        addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; $('#installBtn').hidden = false; });
+        $('#installBtn').onclick = async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt(); await deferredPrompt.userChoice;
+            deferredPrompt = null; $('#installBtn').hidden = true;
+        };
+        document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+        /* ================= init ================= */
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); dailyCheck(); } });
+        setInterval(refresh, 15 * 60 * 1000); // keep countdowns fresh if left open
+        renderBanner(); refresh(); scheduleDaily();
+
+        /* ─────────────────────────────────────────────────────────────────────
+        OPTIONAL UPGRADE — notifications while the app is fully closed.
+        Save the snippet below as `sw.js` next to this file and host both over
+        HTTPS. This page auto-detects and registers it, then notifications go
+        through the service worker (required on Android) and Periodic Background
+        Sync can trigger the daily check for installed PWAs on Chrome/Edge:
+        
+            self.addEventListener('install', e => self.skipWaiting());
+            self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+            self.addEventListener('fetch', () => {});
+            self.addEventListener('notificationclick', e => {
+              e.notification.close();
+              e.waitUntil(clients.matchAll({ type: 'window' }).then(l =>
+                l[0] ? l[0].focus() : clients.openWindow('./')));
+            });
+            self.addEventListener('periodicsync', e => {
+              if (e.tag === 'zerodue-daily') e.waitUntil(
+                clients.matchAll({ type: 'window', includeUncontrolled: true })
+                  .then(cs => cs[0] && cs[0].postMessage({ type: 'daily-check' })));
+            });
+        
+        Note: service workers can't read localStorage, so the SW pings an open
+        client to run the check. For 100% server-driven reminders you'd need
+        Web Push with a small backend.
+        ───────────────────────────────────────────────────────────────────── */
+    </script>
+</body>
+
+</html>

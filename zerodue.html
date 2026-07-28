@@ -1,39 +1,75 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>ZeroDue — Credit Card Bill Reminder</title>
-    <meta name="theme-color" content="#0b1220">
+    <meta name="theme-color" content="#060a13">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ZeroDue">
+    <script>
+        /* set theme before first paint to avoid a flash */
+        (function () {
+            try {
+                var s = JSON.parse(localStorage.getItem('zerodue.v1') || 'null');
+                var t = (s && s.settings && s.settings.theme) || 'auto';
+                if (t === 'auto') t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #0b1220;
-            --panel: #121c31;
-            --panel2: #0e1728;
-            --text: #e9effc;
-            --muted: #8ea1c4;
-            --accent: #4f8cff;
-            --good: #22c55e;
-            --warn: #f59e0b;
-            --bad: #ef4444;
-            --line: #22304f;
-            --r: 16px;
+            --bg0: #060a13;
+            --glow1: rgba(64, 86, 170, .45);
+            --glow2: rgba(88, 40, 120, .35);
+            --glass: rgba(148, 163, 255, .055);
+            --glass-brd: rgba(148, 163, 255, .13);
+            --text: #eef2ff;
+            --muted: #8b97b8;
+            --a1: #6d8dff;
+            --a2: #a06bff;
+            --good: #34d399;
+            --warn: #fbbf24;
+            --bad: #fb7185;
+            --pill-open: #93adff;
+            --toast-bg: #141b2e;
+            --toast-text: #ffffff;
+            --toast-brd: rgba(255, 255, 255, .14);
+            --chart-billed: rgba(139, 151, 184, .35);
+            --dock-bg: rgba(13, 18, 32, .72);
+            --r: 18px;
         }
 
-        @media (prefers-color-scheme:light) {
-            :root {
-                --bg: #eef2fa;
-                --panel: #fff;
-                --panel2: #f6f8fd;
-                --text: #0f172a;
-                --muted: #5c6c8d;
-                --line: #e2e8f6;
-            }
+        [data-theme="light"] {
+            --bg0: #eef1f9;
+            --glow1: rgba(147, 167, 255, .40);
+            --glow2: rgba(196, 146, 255, .32);
+            --glass: rgba(255, 255, 255, .66);
+            --glass-brd: rgba(20, 30, 60, .09);
+            --text: #101528;
+            --muted: #5d6a8c;
+            --a1: #4f6ef7;
+            --a2: #8b4ff2;
+            --good: #0d9e72;
+            --warn: #c47f0a;
+            --bad: #e0244f;
+            --pill-open: #3b5bdb;
+            --toast-bg: #ffffff;
+            --toast-text: #101528;
+            --toast-brd: rgba(16, 21, 40, .12);
+            --chart-billed: rgba(93, 106, 140, .25);
+            --dock-bg: rgba(255, 255, 255, .82);
+        }
+
+        [hidden] {
+            display: none !important
         }
 
         * {
@@ -47,113 +83,207 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: var(--bg);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             color: var(--text);
-            min-height: 100vh
+            min-height: 100vh;
+            background:
+                radial-gradient(1100px 550px at 85% -10%, var(--glow1), transparent 60%),
+                radial-gradient(900px 500px at -15% 25%, var(--glow2), transparent 60%),
+                var(--bg0);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color .3s, color .3s;
         }
 
         header {
             position: sticky;
             top: 0;
-            z-index: 5;
+            z-index: 20;
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 14px 16px;
-            background: color-mix(in srgb, var(--bg) 85%, transparent);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--line)
+            padding: 16px 18px 12px;
+            backdrop-filter: blur(14px);
+            background: linear-gradient(to bottom, var(--bg0) 30%, transparent)
+        }
+
+        .logo {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--a1), var(--a2));
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 19px;
+            color: #fff;
+            box-shadow: 0 6px 18px color-mix(in srgb, var(--a1) 40%, transparent)
+        }
+
+        .logo .chk {
+            position: absolute;
+            right: -5px;
+            bottom: -5px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--good);
+            color: #fff;
+            font-size: 9.5px;
+            font-weight: 800;
+            display: grid;
+            place-items: center;
+            border: 2px solid var(--bg0)
         }
 
         header h1 {
-            font-size: 18px;
+            font-size: 19px;
             margin: 0;
-            flex: 1
+            flex: 1;
+            letter-spacing: -.02em
+        }
+
+        header h1 small {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500;
+            letter-spacing: 0
         }
 
         .iconbtn {
-            border: 1px solid var(--line);
-            background: var(--panel);
+            border: 1px solid var(--glass-brd);
+            background: var(--glass);
             color: var(--text);
             border-radius: 12px;
-            padding: 8px 12px;
+            width: 38px;
+            height: 38px;
             font-size: 15px;
-            cursor: pointer
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: .2s
+        }
+
+        .iconbtn:hover {
+            transform: translateY(-1px)
         }
 
         main {
-            max-width: 880px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 16px 16px 110px
+            padding: 6px 16px 130px
         }
 
-        .banner {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            background: linear-gradient(135deg, #4f8cff22, #4f8cff11);
-            border: 1px solid #4f8cff55;
-            padding: 12px 14px;
+        .panel {
+            background: var(--glass);
+            border: 1px solid var(--glass-brd);
             border-radius: var(--r);
-            margin-bottom: 14px;
-            font-size: 14px
+            backdrop-filter: blur(16px)
         }
 
-        .banner button {
-            margin-left: auto
-        }
-
-        .summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-bottom: 16px
-        }
-
-        .stat {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: var(--r);
-            padding: 12px 14px
-        }
-
-        .stat b {
-            display: block;
-            font-size: 20px;
-            margin-top: 2px
-        }
-
-        .stat span {
+        .lbl {
             font-size: 11px;
-            color: var(--muted);
             text-transform: uppercase;
-            letter-spacing: .05em
+            letter-spacing: .08em
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .hero {
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            animation: fadeUp .4s ease both
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap
+        }
+
+        .num {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -.03em;
+            line-height: 1.15;
+            font-variant-numeric: tabular-nums
+        }
+
+        .next {
+            font-size: 20px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums
+        }
+
+        .hero-right {
+            text-align: right
+        }
+
+        .util-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            color: var(--muted);
+            margin: 14px 0 6px
+        }
+
+        .util-row b {
+            color: var(--text)
+        }
+
+        .ubar {
+            height: 6px;
+            border-radius: 99px;
+            background: color-mix(in srgb, var(--muted) 16%, transparent);
+            overflow: hidden
+        }
+
+        .ubar>i {
+            display: block;
+            height: 100%;
+            border-radius: 99px;
+            transition: width .7s cubic-bezier(.2, .8, .2, 1)
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
             gap: 14px
         }
 
         .card {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-left: 5px solid var(--c, #4f8cff);
-            border-radius: var(--r);
-            padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px
+            padding: 16px 18px;
+            position: relative;
+            overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
+            animation: fadeUp .45s ease both
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .2)
+        }
+
+        .card:before {
+            content: '';
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: var(--c, var(--a1))
         }
 
         .card h3 {
             margin: 0;
-            font-size: 16px;
+            font-size: 15.5px;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 8px;
+            font-weight: 700
         }
 
         .card h3 small {
@@ -168,13 +298,8 @@
             gap: 10px
         }
 
-        .muted {
-            color: var(--muted);
-            font-size: 13px
-        }
-
         .pill {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             padding: 4px 10px;
             border-radius: 999px;
@@ -182,34 +307,48 @@
         }
 
         .pill.open {
-            background: #4f8cff22;
-            color: #7aa8ff
+            background: color-mix(in srgb, var(--a1) 14%, transparent);
+            color: var(--pill-open)
         }
 
         .pill.soon {
-            background: #f59e0b22;
-            color: #fbbf24
+            background: color-mix(in srgb, var(--warn) 15%, transparent);
+            color: var(--warn)
         }
 
         .pill.overdue {
-            background: #ef444422;
-            color: #f87171
+            background: color-mix(in srgb, var(--bad) 14%, transparent);
+            color: var(--bad)
         }
 
         .pill.paid {
-            background: #22c55e22;
-            color: #4ade80
+            background: color-mix(in srgb, var(--good) 15%, transparent);
+            color: var(--good)
         }
 
         .amount {
-            font-size: 22px;
-            font-weight: 700
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+            font-variant-numeric: tabular-nums
+        }
+
+        .util {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between
+        }
+
+        .util b {
+            color: var(--text)
         }
 
         .actions {
             display: flex;
             gap: 8px;
-            margin-top: 4px;
+            margin-top: 6px;
             align-items: center
         }
 
@@ -223,85 +362,293 @@
             border-radius: 12px;
             padding: 10px 14px;
             font-weight: 600;
-            background: var(--accent);
-            color: #fff
+            color: #fff;
+            background: linear-gradient(135deg, var(--a1), var(--a2));
+            box-shadow: 0 6px 18px color-mix(in srgb, var(--a1) 26%, transparent);
+            transition: .15s
+        }
+
+        .btn:hover {
+            filter: brightness(1.08)
         }
 
         .btn.ghost {
-            background: transparent;
-            border: 1px solid var(--line);
-            color: var(--text)
+            background: var(--glass);
+            border: 1px solid var(--glass-brd);
+            color: var(--text);
+            box-shadow: none
         }
 
         .btn.danger {
             background: transparent;
-            border: 1px solid #ef444466;
-            color: #f87171
+            border: 1px solid color-mix(in srgb, var(--bad) 30%, transparent);
+            color: var(--bad);
+            box-shadow: none
         }
 
         .btn.sm {
-            padding: 7px 10px;
-            font-size: 13px;
+            padding: 7px 11px;
+            font-size: 12.5px;
             border-radius: 10px
         }
 
-        #fab {
+        #dock {
             position: fixed;
-            right: 18px;
-            bottom: calc(18px + env(safe-area-inset-bottom));
-            width: 58px;
-            height: 58px;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: calc(14px + env(safe-area-inset-bottom));
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px;
+            border-radius: 99px;
+            background: var(--dock-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-brd);
+            box-shadow: 0 12px 34px rgba(0, 0, 0, .3)
+        }
+
+        .dockbtn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 99px;
+            transition: .2s
+        }
+
+        .dockbtn svg {
+            width: 20px;
+            height: 20px
+        }
+
+        .dockbtn.active {
+            background: linear-gradient(135deg, var(--a1), var(--a2));
+            color: #fff;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--a1) 40%, transparent)
+        }
+
+        #fab {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             border: 0;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--a1), var(--a2));
             color: #fff;
-            font-size: 30px;
+            font-size: 28px;
             line-height: 1;
-            box-shadow: 0 8px 24px #0006;
-            z-index: 6
+            box-shadow: 0 8px 22px color-mix(in srgb, var(--a1) 45%, transparent);
+            transition: .15s
+        }
+
+        #fab:hover {
+            transform: scale(1.06)
+        }
+
+        .tab {
+            display: none
+        }
+
+        .tab.active {
+            display: block;
+            animation: fadeUp .35s ease both
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 14px
+        }
+
+        .chip {
+            padding: 7px 14px;
+            border-radius: 99px;
+            border: 1px solid var(--glass-brd);
+            background: transparent;
+            color: var(--muted);
+            font-size: 12.5px;
+            font-weight: 600;
+            transition: .15s
+        }
+
+        .chip.on {
+            background: linear-gradient(135deg, var(--a1), var(--a2));
+            color: #fff;
+            border-color: transparent
+        }
+
+        .chart-panel {
+            padding: 16px;
+            margin-bottom: 16px
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px
+        }
+
+        .legend i {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-right: 5px
+        }
+
+        canvas {
+            width: 100%;
+            display: block
+        }
+
+        .tl {
+            position: relative;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px
+        }
+
+        .tl:before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 8px;
+            bottom: 8px;
+            width: 2px;
+            background: linear-gradient(var(--a1), transparent);
+            border-radius: 2px
+        }
+
+        .titem {
+            position: relative
+        }
+
+        .titem .dot {
+            position: absolute;
+            left: -18.5px;
+            top: 5px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--c, var(--a1));
+            box-shadow: 0 0 0 3px var(--bg0)
+        }
+
+        .trow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 14px
+        }
+
+        .banner {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            font-size: 13.5px;
+            border: 1px solid color-mix(in srgb, var(--a1) 35%, transparent);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--a1) 14%, transparent), color-mix(in srgb, var(--a2) 10%, transparent));
+            border-radius: var(--r)
+        }
+
+        .banner button {
+            margin-left: auto
         }
 
         dialog {
-            border: 1px solid var(--line);
-            background: var(--panel);
+            border: 1px solid var(--glass-brd);
+            background: var(--bg0);
             color: var(--text);
-            border-radius: 18px;
+            border-radius: 20px;
             padding: 0;
-            width: min(440px, 92vw)
+            width: min(450px, 92vw);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .5)
+        }
+
+        @supports (backdrop-filter:blur(1px)) {
+            dialog {
+                background: color-mix(in srgb, var(--bg0) 88%, transparent);
+                backdrop-filter: blur(20px)
+            }
         }
 
         dialog::backdrop {
-            background: #0009;
-            backdrop-filter: blur(2px)
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(3px)
+        }
+
+        dialog[open] {
+            animation: pop .22s ease
+        }
+
+        @keyframes pop {
+            from {
+                opacity: 0;
+                transform: scale(.96)
+            }
         }
 
         dialog form,
         dialog .body {
-            padding: 18px
+            padding: 20px
         }
 
         dialog h2 {
             margin: 0 0 6px;
-            font-size: 17px
+            font-size: 17px;
+            letter-spacing: -.01em
         }
 
         label {
             display: block;
             font-size: 11px;
             color: var(--muted);
-            margin: 12px 0 4px;
+            margin: 13px 0 5px;
             text-transform: uppercase;
-            letter-spacing: .05em
+            letter-spacing: .06em
         }
 
         input {
             width: 100%;
             padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid var(--line);
-            background: var(--panel2);
+            border-radius: 11px;
+            border: 1px solid var(--glass-brd);
+            background: var(--glass);
             color: var(--text);
-            font: inherit
+            font: inherit;
+            outline: none;
+            transition: .15s
+        }
+
+        input:focus {
+            border-color: var(--a1);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--a1) 20%, transparent)
         }
 
         input[type=color] {
@@ -319,27 +666,28 @@
             display: flex;
             gap: 8px;
             justify-content: flex-end;
-            margin-top: 16px;
+            margin-top: 18px;
             flex-wrap: wrap
         }
 
         #toast {
             position: fixed;
             left: 50%;
-            bottom: 24px;
+            bottom: 96px;
             transform: translate(-50%, 80px);
-            background: #111827;
-            color: #fff;
-            border: 1px solid #ffffff22;
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            border: 1px solid var(--toast-brd);
             padding: 12px 18px;
-            border-radius: 12px;
-            font-size: 14px;
+            border-radius: 14px;
+            font-size: 13.5px;
             opacity: 0;
             transition: .25s;
-            z-index: 50;
+            z-index: 60;
             max-width: 90vw;
             text-align: center;
-            pointer-events: none
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .35)
         }
 
         #toast.show {
@@ -348,18 +696,19 @@
         }
 
         .empty {
-            grid-column: 1/-1;
             text-align: center;
             color: var(--muted);
-            padding: 50px 20px;
-            border: 1px dashed var(--line);
-            border-radius: var(--r)
+            padding: 46px 20px;
+            border: 1px dashed var(--glass-brd);
+            border-radius: var(--r);
+            grid-column: 1/-1;
+            font-size: 14px
         }
 
         .hr {
             height: 1px;
-            background: var(--line);
-            margin: 14px -18px
+            background: var(--glass-brd);
+            margin: 16px -20px
         }
 
         .small {
@@ -367,24 +716,64 @@
             color: var(--muted);
             line-height: 1.55
         }
+
+        code {
+            background: var(--glass);
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 12px
+        }
     </style>
 </head>
 
 <body>
     <header>
-        <h1>💳 ZeroDue</h1>
+        <div class="logo">0<span class="chk">✓</span></div>
+        <h1>ZeroDue<small>never pay a late fee again</small></h1>
+        <button class="iconbtn" id="themeBtn" title="Theme: auto">🌓</button>
         <button class="iconbtn" id="bellBtn" title="Notifications">🔕</button>
         <button class="iconbtn" id="settingsBtn" title="Settings">⚙️</button>
     </header>
     <main>
         <div class="banner" id="permBanner" hidden>
-            <span>🔔 Enable notifications to get daily bill reminders.</span>
+            <span>🔔 Enable notifications for escalating bill reminders.</span>
             <button class="btn sm" id="enableNotif">Enable</button>
         </div>
-        <section class="summary" id="summary"></section>
-        <section class="grid" id="cards"></section>
+
+        <section id="tab-cards" class="tab active">
+            <div id="hero"></div>
+            <section class="grid" id="cards"></section>
+        </section>
+
+        <section id="tab-history" class="tab">
+            <div class="chips" id="chips"></div>
+            <div class="panel chart-panel">
+                <div class="row"><b style="font-size:14px">Billed vs paid — last 12 cycles</b></div>
+                <canvas id="chart" height="190"></canvas>
+                <div class="legend"><span><i style="background:var(--chart-billed)"></i>Billed</span><span><i
+                            style="background:linear-gradient(135deg,#6d8dff,#a06bff)"></i>Paid</span></div>
+            </div>
+            <div class="tl" id="timeline"></div>
+        </section>
     </main>
-    <button id="fab" title="Add card">+</button>
+
+    <nav id="dock">
+        <button class="dockbtn active" data-tab="cards">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="5" width="18" height="14" rx="3" />
+                <path d="M3 10h18" />
+            </svg>
+            Cards
+        </button>
+        <button id="fab" title="Add card">+</button>
+        <button class="dockbtn" data-tab="history">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 3" />
+            </svg>
+            History
+        </button>
+    </nav>
 
     <dialog id="cardDialog">
         <form id="cardForm" autocomplete="off">
@@ -392,36 +781,57 @@
             <label for="f_name">Card name</label>
             <input id="f_name" required maxlength="40" placeholder="e.g. HDFC Regalia">
             <div class="frow">
-                <div><label for="f_last4">Last 4 digits (optional)</label><input id="f_last4" inputmode="numeric"
+                <div><label for="f_last4">Last 4 (optional)</label><input id="f_last4" inputmode="numeric"
                         pattern="\d{0,4}" maxlength="4" placeholder="1234"></div>
-                <div><label for="f_amount">Bill amount (optional)</label><input id="f_amount" type="number" min="0"
+                <div><label for="f_amount">Typical bill ₹ (opt.)</label><input id="f_amount" type="number" min="0"
                         step="any" placeholder="0"></div>
             </div>
             <div class="frow">
                 <div><label for="f_gen">Bill generation day</label><input id="f_gen" type="number" min="1" max="31"
-                        required placeholder="e.g. 1"></div>
+                        required placeholder="1"></div>
                 <div><label for="f_due">Payment due day</label><input id="f_due" type="number" min="1" max="31" required
-                        placeholder="e.g. 20"></div>
+                        placeholder="20"></div>
             </div>
-            <label for="f_color">Card color</label>
-            <input id="f_color" type="color" value="#4f8cff">
-            <p class="small">If the due day falls in the following month (e.g. generated on the 25th, due on the 12th),
-                it's handled automatically. Reminders run daily from the generation date until you mark the bill paid —
-                including overdue.</p>
+            <div class="frow">
+                <div><label for="f_limit">Credit limit (optional)</label><input id="f_limit" type="number" min="0"
+                        step="any" placeholder="100000"></div>
+                <div><label for="f_color">Card color</label><input id="f_color" type="color" value="#6d8dff"></div>
+            </div>
+            <p class="small">Changing the limit later is recorded in history with its effective date. Utilization =
+                unpaid billed amounts ÷ limit.</p>
             <div class="dactions">
                 <button type="button" class="btn ghost" id="cancelCard">Cancel</button>
-                <button class="btn" id="saveCard">Save card</button>
+                <button class="btn">Save card</button>
             </div>
         </form>
+    </dialog>
+
+    <dialog id="paidDialog">
+        <div class="body">
+            <h2>Mark bill as paid</h2>
+            <p class="small" id="p_info"></p>
+            <label for="p_amount">Amount paid (optional)</label>
+            <input id="p_amount" type="number" min="0" step="any">
+            <p class="small">Prefilled with the billed amount — edit if you paid a different amount. Shown in history
+                &amp; charts.</p>
+            <div class="dactions">
+                <button class="btn ghost" id="p_cancel">Cancel</button>
+                <button class="btn" id="p_save">Mark as paid</button>
+            </div>
+        </div>
     </dialog>
 
     <dialog id="settingsDialog">
         <div class="body">
             <h2>Settings</h2>
-            <label for="s_time">Daily reminder time</label>
-            <input id="s_time" type="time">
-            <label for="s_cur">Currency symbol</label>
-            <input id="s_cur" maxlength="3">
+            <div class="frow">
+                <div><label for="s_time">Reminder time</label><input id="s_time" type="time"></div>
+                <div><label for="s_cur">Currency</label><input id="s_cur" maxlength="3"></div>
+            </div>
+            <label for="s_days">Escalating reminders (days before due)</label>
+            <input id="s_days" placeholder="7,3,1">
+            <p class="small">You'll be notified when the bill is generated, again on each of these days before the due
+                date, on the due date itself, and daily while overdue.</p>
             <div class="dactions" style="justify-content:flex-start">
                 <button class="btn ghost sm" id="testNotif">Send test notification</button>
                 <button class="btn ghost sm" id="installBtn" hidden>⬇ Install app</button>
@@ -433,10 +843,9 @@
                 <input type="file" id="importFile" accept="application/json" hidden>
             </div>
             <div class="hr"></div>
-            <p class="small"><b>How reminders work:</b> once a day, after your chosen time, the app notifies you about
-                every unpaid bill. The check runs while the app is open and every time you open it — so install it to
-                your home screen and open it once a day. For reminders when the app is fully closed, see the
-                <code>sw.js</code> note at the bottom of this file's source.</p>
+            <p class="small"><b>How reminders work:</b> reminders run while the app is open and every time you open it —
+                install it to your home screen and open it once a day for reliable alerts. Theme can be toggled with the
+                🌓 button in the header (auto follows your system).</p>
             <div class="dactions">
                 <button type="button" class="btn ghost" id="closeSettings">Close</button>
                 <button class="btn" id="saveSettings">Save</button>
@@ -460,15 +869,19 @@
         const fmtY = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
         const localStr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+        const cycleLabel = k => new Date(+k.slice(0, 4), +k.slice(5, 7) - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+        const compact = n => n >= 100000 ? +(n / 100000).toFixed(1) + 'L' : n >= 1000 ? +(n / 1000).toFixed(1) + 'k' : String(Math.round(n));
+        const utilColor = p => p < 30 ? 'var(--good)' : p < 60 ? 'var(--warn)' : 'var(--bad)';
 
-        /* ================= icon + manifest (embedded PWA) ================= */
-        const ICON_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='#4f8cff'/><rect x='72' y='148' width='368' height='216' rx='28' fill='#ffffff'/><rect x='72' y='196' width='368' height='44' fill='#0b1220'/><rect x='104' y='292' width='150' height='30' rx='10' fill='#a8bfe8'/></svg>`;
+        /* ================= icon + manifest ================= */
+        const ICON_SVG = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#6d8dff'/><stop offset='1' stop-color='#a06bff'/></linearGradient></defs><rect width='512' height='512' rx='110' fill='url(#g)'/><text x='216' y='250' font-family='Arial,sans-serif' font-size='280' font-weight='bold' fill='#ffffff' text-anchor='middle' dominant-baseline='middle'>0</text><circle cx='362' cy='362' r='94' fill='#22c55e' stroke='#ffffff' stroke-width='14'/><path d='M322 362 l30 30 l54 -60' stroke='#ffffff' stroke-width='26' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>`;
         const ICON_URI = 'data:image/svg+xml,' + encodeURIComponent(ICON_SVG);
         try {
             const manifest = {
                 name: 'ZeroDue — Credit Card Bill Reminder', short_name: 'ZeroDue',
+                description: 'Escalating reminders for credit card bills, with limits, utilization and payment history.',
                 start_url: location.href, display: 'standalone',
-                background_color: '#0b1220', theme_color: '#0b1220',
+                background_color: '#060a13', theme_color: '#060a13',
                 icons: [{ src: ICON_URI, sizes: 'any', type: 'image/svg+xml', purpose: 'any' }]
             };
             const link = document.createElement('link');
@@ -479,24 +892,50 @@
 
         /* ================= state ================= */
         const LS_KEY = 'zerodue.v1';
-        // one-time migration from the old "CardDue" storage key
-        try {
+        try { // one-time migration from the original "CardDue" key
             const old = localStorage.getItem('carddue.v1');
-            if (old && !localStorage.getItem(LS_KEY)) {
-                localStorage.setItem(LS_KEY, old);
-                localStorage.removeItem('carddue.v1');
-            }
+            if (old && !localStorage.getItem(LS_KEY)) { localStorage.setItem(LS_KEY, old); localStorage.removeItem('carddue.v1'); }
         } catch (e) { }
         let state = null;
         try { state = JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) { }
-        state ||= { cards: [], settings: { reminderTime: '09:00', currency: '₹' }, lastNotified: {} };
-        state.settings ||= { reminderTime: '09:00', currency: '₹' };
-        state.lastNotified ||= {};
+        state ||= { cards: [], settings: {}, lastNotified: {} };
+        function normalize() {
+            state.settings ||= {};
+            state.settings.reminderTime ||= '09:00';
+            state.settings.currency ||= '₹';
+            state.settings.remindDays ||= [7, 3, 1];
+            state.settings.theme ||= 'auto';
+            state.lastNotified ||= {};
+            state.cards.forEach(c => {
+                c.limit ??= null; c.limitHistory ||= []; c.cycles ||= {}; c.amount ??= null;
+                Object.values(c.cycles).forEach(cy => { cy.paidAmount ??= null; cy.reminded ||= {}; });
+            });
+        }
+        normalize();
         const save = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { } };
 
-        /* ================= billing-cycle logic ================= */
-        // Current cycle = most recent generation date <= today; due date is the
-        // dueDay of the same month (if dueDay > genDay) or of the next month.
+        /* ================= theme ================= */
+        const mqLight = matchMedia('(prefers-color-scheme: light)');
+        function applyTheme() {
+            const pref = state.settings.theme || 'auto';
+            const resolved = pref === 'auto' ? (mqLight.matches ? 'light' : 'dark') : pref;
+            document.documentElement.dataset.theme = resolved;
+            const btn = $('#themeBtn');
+            btn.textContent = pref === 'auto' ? '🌓' : resolved === 'light' ? '☀️' : '🌙';
+            btn.title = 'Theme: ' + pref + (pref === 'auto' ? ' (' + resolved + ')' : '');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', resolved === 'light' ? '#eef1f9' : '#060a13');
+            drawChart(); // re-render chart with theme colors if visible
+        }
+        mqLight.addEventListener?.('change', () => { if ((state.settings.theme || 'auto') === 'auto') applyTheme(); });
+        $('#themeBtn').onclick = () => {
+            const order = ['auto', 'light', 'dark'];
+            const cur = state.settings.theme || 'auto';
+            state.settings.theme = order[(order.indexOf(cur) + 1) % 3];
+            save(); applyTheme();
+            toast('Theme: ' + state.settings.theme);
+        };
+
+        /* ================= billing cycles ================= */
         function currentCycle(card, today) {
             const t = d0(today);
             let gen = new Date(t.getFullYear(), t.getMonth(), clampDay(t.getFullYear(), t.getMonth(), card.genDay));
@@ -517,7 +956,7 @@
             card.cycles ||= {};
             const c = currentCycle(card, today);
             if (!card.cycles[c.key]) {
-                card.cycles[c.key] = { gen: c.gen.toISOString(), due: c.due.toISOString(), paidOn: null, amount: card.amount ?? null };
+                card.cycles[c.key] = { gen: c.gen.toISOString(), due: c.due.toISOString(), paidOn: null, paidAmount: null, amount: card.amount ?? null, reminded: {} };
             }
             return c.key;
         }
@@ -527,22 +966,19 @@
                 .map(([key, c]) => ({ key, ...c, genDate: new Date(c.gen), dueDate: new Date(c.due) }))
                 .sort((a, b) => a.dueDate - b.dueDate);
         }
+        const usedAmount = card => unpaidCycles(card).reduce((s, u) => s + +(u.amount ?? card.amount ?? 0), 0);
 
         /* ================= notifications ================= */
         let swReg = null;
         if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-            navigator.serviceWorker.register('sw.js').then(async r => {
-                swReg = r;
-                try { if ('periodicSync' in r) await r.periodicSync.register('zerodue-daily', { minInterval: 12 * 60 * 60 * 1000 }); } catch (e) { }
-            }).catch(() => { /* optional sw.js not present — single-file mode */ });
-            navigator.serviceWorker.addEventListener('message', e => { if (e.data?.type === 'daily-check') dailyCheck(); });
+            navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => { });
         }
         const notifPerm = () => ('Notification' in window) ? Notification.permission : 'unsupported';
         async function askPermission() {
             if (!('Notification' in window)) return toast('This browser does not support notifications');
             const p = await Notification.requestPermission();
             renderBanner();
-            if (p === 'granted') { toast('Notifications enabled 🎉'); dailyCheck(); }
+            if (p === 'granted') { toast('Notifications enabled 🎉'); processReminders(); }
             else if (p === 'denied') toast('Notifications blocked — enable them in browser settings');
         }
         async function notify(title, body, tag) {
@@ -550,29 +986,53 @@
                 if (swReg) { await swReg.showNotification(title, { body, tag, icon: ICON_URI, badge: ICON_URI }); return; }
                 if (notifPerm() === 'granted') { new Notification(title, { body, tag, icon: ICON_URI }); return; }
             } catch (e) { }
-            toast(title + (body ? ' — ' + body : ''), 6000); // fallback: in-app toast
+            toast(title + (body ? ' — ' + body : ''), 6000);
         }
-        function dailyCheck() {
+        /* escalating tiers: gen → each of remindDays → due day → daily overdue */
+        function processReminders() {
             const now = new Date();
             const [rh, rm] = (state.settings.reminderTime || '09:00').split(':').map(Number);
-            if (now.getHours() < rh || (now.getHours() === rh && now.getMinutes() < rm)) return; // not time yet
+            if (now.getHours() < rh || (now.getHours() === rh && now.getMinutes() < rm)) return;
             const tstr = localStr(now);
+            const days = state.settings.remindDays?.length ? state.settings.remindDays : [7, 3, 1];
+            const asc = [...days].sort((a, b) => a - b);
             state.cards.forEach(card => {
                 ensureCycle(card, now);
                 const unpaid = unpaidCycles(card);
                 if (!unpaid.length) return;
-                if (state.lastNotified[card.id] === tstr) return; // already reminded today
-                const c = unpaid[0];
-                const dl = daysBetween(now, c.dueDate);
-                const amt = (c.amount ?? card.amount) != null ? ` • ${state.settings.currency}${Number(c.amount ?? card.amount).toLocaleString()}` : '';
-                let title;
-                if (dl > 0) title = `${card.name}: due in ${dl} day${dl === 1 ? '' : 's'}`;
-                else if (dl === 0) title = `${card.name}: due TODAY`;
-                else title = `${card.name}: OVERDUE by ${-dl} day${dl === -1 ? '' : 's'}`;
-                notify(title, `Due ${fmtY(c.dueDate)}${amt}${unpaid.length > 1 ? ` • ${unpaid.length} unpaid bills` : ''}`, 'card-' + card.id);
-                state.lastNotified[card.id] = tstr;
+                const u = unpaid[0];
+                const cyc = card.cycles[u.key];
+                cyc.reminded ||= {};
+                const dl = daysBetween(now, u.dueDate);
+                const amt = (u.amount ?? card.amount) != null ? ` • ${state.settings.currency}${Number(u.amount ?? card.amount).toLocaleString()}` : '';
+                const extra = unpaid.length > 1 ? ` • ${unpaid.length} unpaid bills` : '';
+                if (dl < 0) {
+                    const ok = 'od:' + card.id;
+                    if (state.lastNotified[ok] === tstr) return;
+                    notify(`🚨 ${card.name}: OVERDUE by ${-dl} day${dl === -1 ? '' : 's'}`, `Was due ${fmtY(u.dueDate)}${amt}${extra}`, 'od-' + card.id);
+                    state.lastNotified[ok] = tstr; save(); return;
+                }
+                let tier = null, icon = '📅';
+                if (dl === 0 && !cyc.reminded.d0) { tier = 'd0'; icon = '🚨'; }
+                else {
+                    const cand = asc.find(d => dl <= d && !cyc.reminded['d' + d]);
+                    if (cand != null && dl > 0) { tier = 'd' + cand; icon = dl === 1 ? '🔔' : dl <= 3 ? '⚠️' : '📅'; }
+                    else if (!cyc.reminded.gen && dl > 0) { tier = 'gen'; icon = '🧾'; }
+                }
+                if (!tier) return;
+                if (tier === 'gen') cyc.reminded.gen = true;
+                else {
+                    const dn = tier === 'd0' ? 0 : +tier.slice(1);
+                    cyc.reminded[tier] = true; cyc.reminded.gen = true;
+                    days.filter(d => d > dn).forEach(d => cyc.reminded['d' + d] = true);
+                }
+                const title = tier === 'gen' ? `${icon} ${card.name}: bill generated`
+                    : dl === 0 ? `${icon} ${card.name}: due TODAY`
+                        : `${icon} ${card.name}: due in ${dl} day${dl === 1 ? '' : 's'}`;
+                const body = tier === 'gen' ? `Due ${fmtY(u.dueDate)} (${dl} days left)${amt}${extra}` : `Due ${fmtY(u.dueDate)}${amt}${extra}`;
+                notify(title, body, 'due-' + card.id);
+                save();
             });
-            save();
         }
         let timer = null;
         function scheduleDaily() {
@@ -580,8 +1040,8 @@
             const [rh, rm] = (state.settings.reminderTime || '09:00').split(':').map(Number);
             const now = new Date();
             let next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), rh, rm, 0);
-            if (next <= now) { dailyCheck(); next.setDate(next.getDate() + 1); }
-            timer = setTimeout(() => { dailyCheck(); refresh(); scheduleDaily(); }, next - now);
+            if (next <= now) { processReminders(); next.setDate(next.getDate() + 1); }
+            timer = setTimeout(() => { processReminders(); refresh(); scheduleDaily(); }, next - now);
         }
         function updateBadge() {
             try {
@@ -590,21 +1050,38 @@
             } catch (e) { }
         }
 
-        /* ================= rendering ================= */
-        function renderSummary(today) {
-            let unpaid = 0, overdue = 0, total = 0, next = null;
-            state.cards.forEach(c => unpaidCycles(c).forEach(u => {
-                unpaid++; total += +(u.amount ?? c.amount ?? 0);
-                if (daysBetween(today, u.dueDate) < 0) overdue++;
-                if (!next || u.dueDate < next.due) next = { due: u.dueDate, name: c.name };
-            }));
-            $('#summary').innerHTML = `
-    <div class="stat"><span>Unpaid bills</span><b>${unpaid}</b></div>
-    <div class="stat"><span>Overdue</span><b style="color:${overdue ? 'var(--bad)' : 'inherit'}">${overdue}</b></div>
-    <div class="stat"><span>Outstanding</span><b>${esc(state.settings.currency)}${total.toLocaleString()}</b></div>
-    <div class="stat"><span>Next due</span><b>${next ? fmt(next.due) : '—'}</b>${next ? `<div class="muted" style="font-size:12px">${esc(next.name)}</div>` : ''}</div>`;
+        /* ================= render: cards tab ================= */
+        function renderHero(today) {
+            let outstanding = 0, overdue = 0, next = null, usedSum = 0, limSum = 0, unpaidCount = 0;
+            state.cards.forEach(c => {
+                const u = unpaidCycles(c);
+                u.forEach(x => {
+                    unpaidCount++; outstanding += +(x.amount ?? c.amount ?? 0);
+                    const dl = daysBetween(today, x.dueDate);
+                    if (dl < 0) overdue++;
+                    if (!next || x.dueDate < next.due) next = { due: x.dueDate, name: c.name };
+                });
+                if (c.limit) { usedSum += usedAmount(c); limSum += c.limit; }
+            });
+            const utilPct = limSum ? Math.round(usedSum / limSum * 100) : null;
+            $('#hero').innerHTML = `<div class="hero panel">
+    <div class="hero-top">
+      <div>
+        <div class="muted lbl">Total outstanding</div>
+        <div class="num">${esc(state.settings.currency)}${outstanding.toLocaleString()}</div>
+        <div class="muted">${unpaidCount} unpaid bill${unpaidCount === 1 ? '' : 's'}${overdue ? ` · <span style="color:var(--bad)">${overdue} overdue</span>` : ''}</div>
+      </div>
+      <div class="hero-right">
+        <div class="muted lbl">Next due</div>
+        <div class="next">${next ? fmt(next.due) : '—'}</div>
+        <div class="muted">${next ? esc(next.name) : ''}</div>
+      </div>
+    </div>
+    ${utilPct != null ? `<div class="util-row"><span>Overall utilization</span><b>${utilPct}%</b></div>
+    <div class="ubar"><i style="width:${Math.min(utilPct, 100)}%;background:${utilColor(utilPct)}"></i></div>` : ''}
+  </div>`;
         }
-        function cardHTML(card, today) {
+        function cardHTML(card, today, i) {
             const unpaid = unpaidCycles(card);
             const cur = currentCycle(card, today);
             const cyc = card.cycles[cur.key];
@@ -616,7 +1093,7 @@
                 else if (dl === 0) { pill = 'Due today'; pillCls = 'soon'; }
                 else { pill = `${dl} day${dl === 1 ? '' : 's'} left`; pillCls = dl <= 3 ? 'soon' : 'open'; }
                 dueLine = `Bill ${fmt(u.genDate)} → due <b>${fmtY(u.dueDate)}</b>` +
-                    (unpaid.length > 1 ? ` · <span style="color:var(--bad)">${unpaid.length} unpaid bills</span>` : '');
+                    (unpaid.length > 1 ? ` · <span style="color:var(--bad)">${unpaid.length} unpaid</span>` : '');
                 const amt = u.amount ?? card.amount;
                 if (amt != null) amountHTML = `<div class="amount">${esc(state.settings.currency)}${Number(amt).toLocaleString()}</div>`;
                 btn = `<button class="btn sm" data-act="paid" data-id="${card.id}">Mark as paid</button>`;
@@ -625,28 +1102,34 @@
                 const paidOn = cyc.paidOn ? new Date(cyc.paidOn) : null;
                 const nm = new Date(cur.gen.getFullYear(), cur.gen.getMonth() + 1, 1);
                 const nextGen = new Date(nm.getFullYear(), nm.getMonth(), clampDay(nm.getFullYear(), nm.getMonth(), card.genDay));
-                dueLine = `${fmt(new Date(cyc.gen))} bill paid${paidOn ? ' on ' + fmtY(paidOn) : ''} · next bill ${fmt(nextGen)}`;
-                const amt = cyc.amount ?? card.amount;
-                if (amt != null) amountHTML = `<div class="amount" style="color:var(--muted);text-decoration:line-through">${esc(state.settings.currency)}${Number(amt).toLocaleString()}</div>`;
+                dueLine = `${cycleLabel(cur.key)} bill paid${paidOn ? ' on ' + fmtY(paidOn) : ''} · next ${fmt(nextGen)}`;
+                const amt = cyc.paidAmount ?? cyc.amount ?? card.amount;
+                if (amt != null) amountHTML = `<div class="amount" style="color:var(--muted)">${esc(state.settings.currency)}${Number(amt).toLocaleString()}</div>`;
                 btn = `<button class="btn ghost sm" data-act="undo" data-id="${card.id}">Undo</button>`;
             }
-            return `<article class="card" style="--c:${esc(card.color || '#4f8cff')}">
+            let utilHTML = '';
+            if (card.limit) {
+                const pct = Math.round(usedAmount(card) / card.limit * 100);
+                utilHTML = `<div class="util"><span>Utilization</span><b>${pct}% of ${esc(state.settings.currency)}${Number(card.limit).toLocaleString()}</b></div>
+    <div class="ubar"><i style="width:${Math.min(pct, 100)}%;background:${utilColor(pct)}"></i></div>`;
+            }
+            return `<article class="card panel" style="--c:${esc(card.color || '#6d8dff')};animation-delay:${i * 60}ms">
     <div class="row">
       <h3>${esc(card.name)} ${card.last4 ? `<small>•• ${esc(card.last4)}</small>` : ''}</h3>
       <span class="pill ${pillCls}">${pill}</span>
     </div>
-    ${amountHTML}
-    <div class="muted">${dueLine}</div>
+    ${amountHTML}${utilHTML}
+    <div class="muted" style="margin-top:6px">${dueLine}</div>
     <div class="actions">${btn}<span style="flex:1"></span>
       <button class="btn ghost sm" data-act="edit" data-id="${card.id}">Edit</button>
       <button class="btn danger sm" data-act="del" data-id="${card.id}" title="Delete">✕</button>
     </div>
   </article>`;
         }
-        function render() {
+        function renderCards() {
             const today = new Date();
             state.cards.forEach(c => ensureCycle(c, today));
-            renderSummary(today);
+            renderHero(today);
             const wrap = $('#cards');
             if (!state.cards.length) {
                 wrap.innerHTML = `<div class="empty">No cards yet.<br>Tap <b>+</b> to add your first credit card.</div>`;
@@ -657,9 +1140,107 @@
                 if (ua && ub) return ua.dueDate - ub.dueDate;
                 return ua ? -1 : ub ? 1 : 0;
             });
-            wrap.innerHTML = sorted.map(c => cardHTML(c, today)).join('');
+            wrap.innerHTML = sorted.map((c, i) => cardHTML(c, today, i)).join('');
         }
-        function refresh() { save(); render(); updateBadge(); }
+
+        /* ================= render: history tab ================= */
+        let histFilter = 'all';
+        function chartData() {
+            const buckets = {};
+            state.cards.filter(c => histFilter === 'all' || c.id === histFilter).forEach(c => {
+                Object.entries(c.cycles || {}).forEach(([k, cy]) => {
+                    const billed = +(cy.amount ?? c.amount ?? 0);
+                    const paid = cy.paidOn ? +(cy.paidAmount ?? billed) : 0;
+                    if (!billed && !paid) return;
+                    buckets[k] ||= { billed: 0, paid: 0 };
+                    buckets[k].billed += billed; buckets[k].paid += paid;
+                });
+            });
+            return Object.keys(buckets).sort().slice(-12).map(k => ({
+                key: k, label: cycleLabel(k).split(' ')[0], billed: buckets[k].billed, paid: buckets[k].paid
+            }));
+        }
+        function drawChart() {
+            const cv = $('#chart'); if (!cv || !$('#tab-history').classList.contains('active')) return;
+            const dpr = devicePixelRatio || 1;
+            const W = cv.clientWidth || cv.parentElement.clientWidth - 32, H = 190;
+            cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
+            const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+            const data = chartData();
+            const css = v => getComputedStyle(document.body).getPropertyValue(v).trim();
+            const muted = css('--muted'), brd = css('--glass-brd'), billedCol = css('--chart-billed');
+            if (!data.length) {
+                ctx.fillStyle = muted; ctx.font = '13px Inter,sans-serif'; ctx.textAlign = 'center';
+                ctx.fillText('No billing data yet', W / 2, H / 2); return;
+            }
+            const max = Math.max(...data.map(d => Math.max(d.billed, d.paid)), 1) * 1.15;
+            const padL = 44, padB = 22, padT = 8;
+            const plotW = W - padL - 8, plotH = H - padT - padB;
+            ctx.strokeStyle = brd; ctx.fillStyle = muted; ctx.font = '10.5px Inter,sans-serif'; ctx.textAlign = 'right'; ctx.lineWidth = 1;
+            for (let i = 0; i <= 3; i++) {
+                const y = padT + plotH - plotH * i / 3;
+                ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - 8, y); ctx.stroke();
+                ctx.fillText(compact(max * i / 3), padL - 6, y + 3.5);
+            }
+            const slot = plotW / data.length;
+            const bw = Math.min(13, slot / 3);
+            const rrect = (x, y, w, h) => {
+                if (h <= 0) return;
+                const r = Math.min(4, w / 2, h);
+                ctx.beginPath();
+                ctx.moveTo(x, y + h); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+                ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
+            };
+            const grad = ctx.createLinearGradient(0, padT, 0, H - padB);
+            grad.addColorStop(0, '#a06bff'); grad.addColorStop(1, '#6d8dff');
+            data.forEach((d, i) => {
+                const cx = padL + slot * i + slot / 2;
+                ctx.fillStyle = billedCol;
+                rrect(cx - bw - 1.5, padT + plotH - plotH * d.billed / max, bw, plotH * d.billed / max);
+                ctx.fillStyle = grad;
+                rrect(cx + 1.5, padT + plotH - plotH * d.paid / max, bw, plotH * d.paid / max);
+                ctx.fillStyle = muted; ctx.textAlign = 'center';
+                ctx.fillText(d.label, cx, H - 7);
+            });
+        }
+        function renderTimeline() {
+            const items = [];
+            state.cards.filter(c => histFilter === 'all' || c.id === histFilter).forEach(c => {
+                Object.entries(c.cycles || {}).forEach(([k, cy]) => { if (cy.paidOn) items.push({ t: 'pay', date: new Date(cy.paidOn), card: c, cy, k }); });
+                (c.limitHistory || []).forEach((h, i, arr) => items.push({ t: 'lim', date: new Date(h.from), card: c, limit: h.limit, prev: i ? arr[i - 1].limit : null }));
+            });
+            items.sort((a, b) => b.date - a.date);
+            const el = $('#timeline');
+            if (!items.length) { el.innerHTML = `<div class="empty">No history yet.<br>Paid bills and credit-limit changes will appear here.</div>`; return; }
+            el.innerHTML = items.slice(0, 120).map(it => {
+                if (it.t === 'lim') {
+                    const dir = it.prev == null ? 'set' : it.limit > it.prev ? 'increased 📈' : 'decreased 📉';
+                    return `<div class="titem"><span class="dot" style="--c:${esc(it.card.color || '#6d8dff')}"></span>
+        <div class="trow"><b>Limit ${dir}</b></div>
+        <div class="muted">${esc(it.card.name)} · ${it.prev != null ? esc(state.settings.currency) + Number(it.prev).toLocaleString() + ' → ' : ''}${esc(state.settings.currency)}${Number(it.limit).toLocaleString()} · ${fmtY(it.date)}</div></div>`;
+                }
+                const { card, cy, k } = it;
+                const billed = +(cy.amount ?? card.amount ?? 0);
+                const paid = +(cy.paidAmount ?? billed);
+                const lateDays = daysBetween(new Date(cy.due), it.date);
+                const badge = lateDays > 0 ? `<span class="pill overdue">${lateDays}d late</span>` : `<span class="pill paid">on time</span>`;
+                return `<div class="titem"><span class="dot" style="--c:${esc(card.color || '#6d8dff')}"></span>
+      <div class="trow"><b>${esc(state.settings.currency)}${paid.toLocaleString()} paid</b>${badge}</div>
+      <div class="muted">${esc(card.name)} · ${cycleLabel(k)} bill · due ${fmt(new Date(cy.due))} · paid ${fmtY(it.date)}${paid !== billed ? ` · billed ${esc(state.settings.currency)}${billed.toLocaleString()}` : ''}</div></div>`;
+            }).join('');
+        }
+        function renderHistory() {
+            $('#chips').innerHTML = `<button class="chip ${histFilter === 'all' ? 'on' : ''}" data-f="all">All cards</button>` +
+                state.cards.map(c => `<button class="chip ${histFilter === c.id ? 'on' : ''}" data-f="${c.id}">${esc(c.name)}</button>`).join('');
+            drawChart();
+            renderTimeline();
+        }
+
+        /* ================= misc ui ================= */
+        function refresh() {
+            save(); renderCards(); updateBadge();
+            if ($('#tab-history').classList.contains('active')) renderHistory();
+        }
         function renderBanner() {
             const p = notifPerm();
             $('#permBanner').hidden = p !== 'default';
@@ -672,15 +1253,39 @@
             clearTimeout(toastTimer);
             toastTimer = setTimeout(() => t.classList.remove('show'), ms);
         }
+        document.querySelectorAll('.dockbtn').forEach(b => b.onclick = () => {
+            document.querySelectorAll('.dockbtn').forEach(x => x.classList.toggle('active', x === b));
+            const tab = b.dataset.tab;
+            $('#tab-cards').classList.toggle('active', tab === 'cards');
+            $('#tab-history').classList.toggle('active', tab === 'history');
+            if (tab === 'history') renderHistory();
+        });
+        $('#chips').addEventListener('click', e => {
+            const b = e.target.closest('.chip'); if (!b) return;
+            histFilter = b.dataset.f; renderHistory();
+        });
+        addEventListener('resize', () => drawChart());
 
         /* ================= actions ================= */
-        function markPaid(card) {
-            const u = unpaidCycles(card)[0];
-            if (!u) return;
-            card.cycles[u.key].paidOn = new Date().toISOString();
-            refresh();
-            toast(`✅ ${card.name} bill (due ${fmt(u.dueDate)}) marked paid`);
+        let payTarget = null;
+        function openPaidDialog(card) {
+            const u = unpaidCycles(card)[0]; if (!u) return;
+            payTarget = { cardId: card.id, key: u.key };
+            $('#p_info').innerHTML = `<b>${esc(card.name)}</b> · ${cycleLabel(u.key)} bill · due <b>${fmtY(u.dueDate)}</b>`;
+            $('#p_amount').value = u.amount ?? card.amount ?? '';
+            $('#paidDialog').showModal();
+            setTimeout(() => $('#p_amount').focus(), 60);
         }
+        $('#p_cancel').onclick = () => $('#paidDialog').close();
+        $('#p_save').onclick = () => {
+            const card = state.cards.find(c => c.id === payTarget?.cardId); if (!card) return;
+            const cyc = card.cycles[payTarget.key]; if (!cyc) return;
+            cyc.paidOn = new Date().toISOString();
+            const v = $('#p_amount').value;
+            cyc.paidAmount = v !== '' ? +v : null;
+            $('#paidDialog').close(); refresh();
+            toast(`✅ ${card.name} bill marked paid`);
+        };
         let editingId = null;
         function openCardForm(card) {
             editingId = card ? card.id : null;
@@ -690,7 +1295,8 @@
             $('#f_amount').value = card?.amount ?? '';
             $('#f_gen').value = card?.genDay ?? '';
             $('#f_due').value = card?.dueDay ?? '';
-            $('#f_color').value = card?.color || '#4f8cff';
+            $('#f_limit').value = card?.limit ?? '';
+            $('#f_color').value = card?.color || '#6d8dff';
             $('#cardDialog').showModal();
         }
         $('#fab').onclick = () => openCardForm();
@@ -703,11 +1309,23 @@
                 amount: $('#f_amount').value !== '' ? +$('#f_amount').value : null,
                 genDay: +$('#f_gen').value,
                 dueDay: +$('#f_due').value,
-                color: $('#f_color').value || '#4f8cff'
+                limit: $('#f_limit').value !== '' ? +$('#f_limit').value : null,
+                color: $('#f_color').value || '#6d8dff'
             };
             if (!data.name || !data.genDay || !data.dueDay) return;
-            if (editingId) Object.assign(state.cards.find(c => c.id === editingId), data);
-            else state.cards.push({ id: uid(), cycles: {}, ...data });
+            if (editingId) {
+                const c = state.cards.find(x => x.id === editingId);
+                const oldLimit = c.limit ?? null;
+                Object.assign(c, data);
+                if (data.limit !== oldLimit && data.limit != null) {
+                    c.limitHistory ||= [];
+                    c.limitHistory.push({ from: localStr(new Date()), limit: data.limit });
+                }
+            } else {
+                const card = { id: uid(), cycles: {}, limitHistory: [], ...data };
+                if (data.limit != null) card.limitHistory.push({ from: localStr(new Date()), limit: data.limit });
+                state.cards.push(card);
+            }
             $('#cardDialog').close();
             refresh(); scheduleDaily();
             if (notifPerm() === 'default') askPermission();
@@ -717,10 +1335,10 @@
             if (!b) return;
             const card = state.cards.find(c => c.id === b.dataset.id);
             if (!card) return;
-            if (b.dataset.act === 'paid') markPaid(card);
+            if (b.dataset.act === 'paid') openPaidDialog(card);
             else if (b.dataset.act === 'undo') {
                 const k = currentCycle(card, new Date()).key;
-                if (card.cycles[k]) { card.cycles[k].paidOn = null; refresh(); }
+                if (card.cycles[k]) { card.cycles[k].paidOn = null; card.cycles[k].paidAmount = null; refresh(); }
             }
             else if (b.dataset.act === 'edit') openCardForm(card);
             else if (b.dataset.act === 'del' && confirm(`Delete "${card.name}" and its history?`)) {
@@ -728,24 +1346,28 @@
             }
         });
 
-        /* ================= settings, backup, install ================= */
+        /* ================= settings / backup / install ================= */
         $('#settingsBtn').onclick = () => {
             $('#s_time').value = state.settings.reminderTime;
             $('#s_cur').value = state.settings.currency;
+            $('#s_days').value = (state.settings.remindDays || [7, 3, 1]).join(',');
             $('#settingsDialog').showModal();
         };
         $('#closeSettings').onclick = () => $('#settingsDialog').close();
         $('#saveSettings').onclick = () => {
             state.settings.reminderTime = $('#s_time').value || '09:00';
             state.settings.currency = $('#s_cur').value || '₹';
-            $('#settingsDialog').close(); refresh(); scheduleDaily();
+            const days = ($('#s_days').value || '').split(',').map(s => parseInt(s.trim(), 10)).filter(n => n > 0 && n < 40);
+            state.settings.remindDays = days.length ? [...new Set(days)] : [7, 3, 1];
+            $('#settingsDialog').close();
+            refresh(); scheduleDaily();
         };
-        $('#testNotif').onclick = () => notify('ZeroDue test 🎉', 'Notifications are working! You will get daily bill reminders.', 'test');
+        $('#testNotif').onclick = () => notify('ZeroDue test 🎉', 'Notifications are working!', 'test');
         $('#enableNotif').onclick = askPermission;
         $('#bellBtn').onclick = () => {
             const p = notifPerm();
             if (p === 'default') askPermission();
-            else toast(p === 'granted' ? 'Notifications are on 🔔' : 'Notifications are blocked — enable them in your browser site settings');
+            else toast(p === 'granted' ? 'Notifications are on 🔔' : 'Notifications are blocked — enable them in browser site settings');
         };
         $('#exportBtn').onclick = () => {
             const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -763,9 +1385,7 @@
                 try {
                     const data = JSON.parse(r.result);
                     if (!data || !Array.isArray(data.cards)) throw 0;
-                    state = data;
-                    state.settings ||= { reminderTime: '09:00', currency: '₹' };
-                    state.lastNotified ||= {};
+                    state = data; normalize(); applyTheme();
                     refresh(); scheduleDaily(); toast('Backup imported ✔');
                 } catch { toast('Invalid backup file'); }
             };
@@ -781,35 +1401,10 @@
         document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
         /* ================= init ================= */
-        document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); dailyCheck(); } });
-        setInterval(refresh, 15 * 60 * 1000); // keep countdowns fresh if left open
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); processReminders(); } });
+        setInterval(refresh, 15 * 60 * 1000);
+        applyTheme();
         renderBanner(); refresh(); scheduleDaily();
-
-        /* ─────────────────────────────────────────────────────────────────────
-        OPTIONAL UPGRADE — notifications while the app is fully closed.
-        Save the snippet below as `sw.js` next to this file and host both over
-        HTTPS. This page auto-detects and registers it, then notifications go
-        through the service worker (required on Android) and Periodic Background
-        Sync can trigger the daily check for installed PWAs on Chrome/Edge:
-        
-            self.addEventListener('install', e => self.skipWaiting());
-            self.addEventListener('activate', e => e.waitUntil(clients.claim()));
-            self.addEventListener('fetch', () => {});
-            self.addEventListener('notificationclick', e => {
-              e.notification.close();
-              e.waitUntil(clients.matchAll({ type: 'window' }).then(l =>
-                l[0] ? l[0].focus() : clients.openWindow('./')));
-            });
-            self.addEventListener('periodicsync', e => {
-              if (e.tag === 'zerodue-daily') e.waitUntil(
-                clients.matchAll({ type: 'window', includeUncontrolled: true })
-                  .then(cs => cs[0] && cs[0].postMessage({ type: 'daily-check' })));
-            });
-        
-        Note: service workers can't read localStorage, so the SW pings an open
-        client to run the check. For 100% server-driven reminders you'd need
-        Web Push with a small backend.
-        ───────────────────────────────────────────────────────────────────── */
     </script>
 </body>
 
